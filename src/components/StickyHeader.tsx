@@ -53,13 +53,13 @@ export default function StickyHeader() {
       animate={{ y: show ? 0 : -110 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="mx-auto px-20 py-10">
+      <div className="mx-auto px-5 md:px-20 py-5 md:py-10">
         <div className="flex justify-between items-center">
-          <Link href="/" className="text-xl font-serif text-primary">
+          <Link href="/" className="text-lg md:text-xl font-serif text-primary">
             Aadil Rasheed
           </Link>
           <nav>
-            <ul className="flex space-x-6 items-center">
+            <ul className="flex space-x-2 md:space-x-6 items-center">
               <li>
                 <Link
                   href="/"

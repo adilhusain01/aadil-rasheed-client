@@ -16,7 +16,7 @@ export default function SocialPage() {
 
   return (
     <PageTransition>
-      <div className="w-full mt-[5rem] max-w-7xl mx-auto px-4 py-12">
+      <div className="w-full mt-[5rem] max-w-7xl mx-auto px-4 md:py-12 flex flex-col items-center justify-center">
         <AnimatedSection>
           <div className="max-w-3xl mx-auto text-center mb-16">
             <h1 className="text-4xl font-serif mb-6">Social Media</h1>
@@ -24,7 +24,7 @@ export default function SocialPage() {
         </AnimatedSection>
 
         <AnimatedSection delay={0.4}>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+          <div className="max-w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
             <InstagramEmbed url="https://www.instagram.com/reel/DHQtTLrz5Le/?utm_source=ig_embed&amp;utm_campaign=loading" />
             <InstagramEmbed url="https://www.instagram.com/reel/CvHvIy0JKz1/?utm_source=ig_embed&amp;utm_campaign=loading" />
             <InstagramEmbed url="https://www.instagram.com/reel/DHGLv8oIfh_/?utm_source=ig_embed&amp;utm_campaign=loading" />

@@ -22,7 +22,7 @@ const blogPosts = [
 export default function BlogPage() {
   return (
     <PageTransition>
-      <div className="mt-[5rem] w-full max-w-7xl mx-auto px-4 py-12">
+      <div className="mt-[5rem] w-full max-w-7xl mx-auto px-4 md:py-12">
         <AnimatedSection>
           <div className="text-center mb-10">
             <h1 className="text-4xl font-serif mb-6">Blog</h1>

@@ -64,7 +64,7 @@ export default function RootLayout({
         className={`${libreBaskerville.variable} ${nunitoSans.variable}`}
       >
         <ClientBody>
-          <div className="flex flex-col min-h-screen pt-4 md:pt-16 px-4 md:px-0">
+          <div className="flex flex-col min-h-screen pt-4 md:pt-16">
             <StickyHeader />
             <main className="flex-1">{children}</main>
             <div id="contact">

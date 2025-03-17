@@ -9,7 +9,7 @@ const InstagramEmbed = ({ url }) => {
 
   return (
     <blockquote
-      className="instagram-media"
+      className="instagram-media max-w-full"
       data-instgrm-captioned
       data-instgrm-permalink={url}
       data-instgrm-version="14"

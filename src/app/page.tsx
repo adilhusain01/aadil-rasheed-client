@@ -26,7 +26,7 @@ export default function Home() {
       <div className="w-full mx-auto">
         <AnimatedSection>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-12">
-            <div className="relative h-[900px] w-full">
+            <div className="relative h-[450] md:h-[900px] w-full">
               <Image
                 src="https://res.cloudinary.com/djxuqljgr/image/upload/v1742238011/vaibhav-raina-ZrwFg0uPXtk-unsplash_qcywlx.jpg"
                 alt="Person lying on grass"
@@ -35,7 +35,7 @@ export default function Home() {
               />
             </div>
 
-            <div className="flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center justify-center px-4">
               {/* <h2 className="text-3xl font-serif mb-4">My Thoughts</h2> */}
               <h2 className="text-3xl font-serif mb-4">मेरी क़लम से </h2>
               <div className="max-w-[440px] mb-6 flex flex-col items-center  justify-center">
@@ -75,12 +75,15 @@ export default function Home() {
         </AnimatedSection>
 
         <AnimatedSection delay={0.3}>
-          <div className="w-full flex flex-col items-center justify-center">
+          <div className="w-full flex flex-col items-center justify-center px-4">
             <div className="py-12 max-w-4xl">
               <h2 className="text-5xl font-serif mb-8">Recent Posts</h2>
               <div className="grid grid-cols-1 gap-8 justify-items-center">
                 {blogPosts.slice(0, 3).map((post, index) => (
-                  <div key={index} className="mb-8 grid grid-cols-2 gap-4">
+                  <div
+                    key={index}
+                    className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4"
+                  >
                     <Link href={`/blog/${post.slug}`}>
                       <div className="relative h-[350px] w-full mb-4 overflow-hidden group">
                         <Image
@@ -121,14 +124,14 @@ export default function Home() {
           <div className="py-8 bg-stone-100 px-8 my-12">
             <div className="flex flex-col md:flex-row gap-6 items-center">
               <div className="md:w-1/2 flex flex-col items-center justify-center">
-                <blockquote className="text-5xl font-serif italic text-gray-700">
+                <blockquote className="text-3xl md:text-5xl font-serif italic text-gray-700">
                   ❝ उनको सीने से लगा जो हैं मुख़ालिफ़ तेरे ❞
                 </blockquote>
                 <p className="mt-4 text-lg text-muted-foreground">
                   — Aadil Rasheed
                 </p>
               </div>
-              <div className="md:w-1/2 relative h-[1000px]">
+              <div className="md:w-1/2 relative w-full h-[350px] md:h-[1000px]">
                 <Image
                   src="https://res.cloudinary.com/djxuqljgr/image/upload/v1742236807/image3_dak6e6.jpg"
                   alt="Quote background"
@@ -175,11 +178,11 @@ export default function Home() {
         </AnimatedSection> */}
 
         <AnimatedSection delay={0.6}>
-          <div className="py-12 px-12">
+          <div className="py-12 px-4 md:px-12">
             <h2 className="text-3xl font-serif mb-8 text-center">
               Some Moments from past
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {[
                 "https://res.cloudinary.com/djxuqljgr/image/upload/v1742233800/image_tqophb.jpg",
                 "https://res.cloudinary.com/djxuqljgr/image/upload/v1742234779/imagr2_l80wqe.jpg",
@@ -205,7 +208,7 @@ export default function Home() {
         </AnimatedSection>
 
         <AnimatedSection delay={0.7}>
-          <div className="py-12 max-w-2xl mx-auto text-center">
+          <div className="py-12 max-w-2xl mx-auto text-center px-4">
             <h2 className="text-3xl font-serif mb-4">Join the Updates</h2>
             <p className="text-muted-foreground mb-8">Get the latest posts</p>
             <form className="space-y-4">

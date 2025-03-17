@@ -53,7 +53,7 @@ export default function BlogPostPage({ params }: PageParams) {
 
   return (
     <PageTransition>
-      <section className="mt-[5rem] ">
+      <section className="mt-[5rem] px-4">
         <div className="w-full max-w-5xl mx-auto py-4">
           <Link href="/blog" className="hover:text-primary transition-colors">
             All posts
