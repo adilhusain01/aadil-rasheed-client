@@ -217,12 +217,11 @@ export default function Home() {
                   key={index}
                   className="relative h-[400px] overflow-hidden group"
                 >
-                  <Image
+                  <img
                     src={image}
                     alt={`Smile gallery ${index + 1}`}
-                    fill
-                    loading="eager" // Add this to force immediate loading
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    style={{ transform: "translateZ(0)" }} // Force hardware acceleration
                   />
                 </div>
               ))}
