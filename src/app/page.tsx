@@ -25,8 +25,8 @@ export default function Home() {
     <PageTransition>
       <div className="w-full mx-auto">
         <AnimatedSection>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-12">
-            <div className="relative h-[450] md:h-[900px] w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:py-12">
+            <div className="md:relative h-[450] md:h-[900px] w-full">
               <Image
                 src="https://res.cloudinary.com/djxuqljgr/image/upload/v1742238011/vaibhav-raina-ZrwFg0uPXtk-unsplash_qcywlx.jpg"
                 alt="Person lying on grass"
