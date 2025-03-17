@@ -19,11 +19,10 @@ const nunitoSans = Nunito_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: "Inner Pieces | Mental Health Blog",
-    template: "%s | Inner Pieces Blog",
+    default: "Aadil Rasheed",
+    template: "Aadil Rasheed",
   },
-  description:
-    "Thoughts on Lifestyle & Mental Health. A personal blog sharing insights, experiences, and resources for mental wellness.",
+  description: "My poetic Journey",
   keywords: [
     "mental health",
     "wellness",
@@ -33,24 +32,17 @@ export const metadata: Metadata = {
     "blog",
     "personal development",
   ],
-  authors: [{ name: "Dena" }],
+  authors: [{ name: "Aadil Rasheed" }],
   icons: {
     icon: "/favicon.svg",
   },
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://inner-pieces-blog.com",
-    title: "Inner Pieces | Mental Health Blog",
-    description:
-      "Thoughts on Lifestyle & Mental Health. A personal blog sharing insights, experiences, and resources for mental wellness.",
-    siteName: "Inner Pieces Blog",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Inner Pieces | Mental Health Blog",
-    description:
-      "Thoughts on Lifestyle & Mental Health. A personal blog sharing insights, experiences, and resources for mental wellness.",
+    url: "https://aadilrasheed.vercel.app/",
+    title: "Aadil Rasheed",
+    description: "My poetic Journey",
+    siteName: "My poetic Journey",
   },
 };
 
