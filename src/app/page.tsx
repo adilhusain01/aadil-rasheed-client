@@ -182,6 +182,28 @@ export default function Home() {
             <h2 className="text-3xl font-serif mb-8 text-center">
               Some Moments from past
             </h2>
+            {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {[
+                "https://res.cloudinary.com/djxuqljgr/image/upload/v1742233800/image_tqophb.jpg",
+                "https://res.cloudinary.com/djxuqljgr/image/upload/v1742234779/imagr2_l80wqe.jpg",
+                "https://res.cloudinary.com/djxuqljgr/image/upload/v1742236807/image3_dak6e6.jpg",
+                "https://res.cloudinary.com/djxuqljgr/image/upload/v1742237648/4_reuuyf.jpg",
+                "https://res.cloudinary.com/djxuqljgr/image/upload/v1742237648/3_l63y7r.jpg",
+                "https://res.cloudinary.com/djxuqljgr/image/upload/v1742237647/2_bqzsdp.jpg",
+              ].map((image, index) => (
+                <div
+                  key={index}
+                  className="relative h-[400px] overflow-hidden group"
+                >
+                  <Image
+                    src={image}
+                    alt={`Smile gallery ${index + 1}`}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                </div>
+              ))}
+            </div> */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {[
                 "https://res.cloudinary.com/djxuqljgr/image/upload/v1742233800/image_tqophb.jpg",
@@ -199,6 +221,7 @@ export default function Home() {
                     src={image}
                     alt={`Smile gallery ${index + 1}`}
                     fill
+                    loading="eager" // Add this to force immediate loading
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                 </div>
