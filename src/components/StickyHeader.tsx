@@ -53,18 +53,18 @@ export default function StickyHeader() {
       animate={{ y: show ? 0 : -110 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="mx-auto px-20 py-10">
+      <div className="mx-auto px-4 md:px-20 py-10">
         <div className="flex justify-between items-center">
           <Link href="/" className="text-xl font-serif text-primary">
             Aadil Rasheed
           </Link>
           <nav>
-            <ul className="flex space-x-6 items-center">
+            <ul className="flex space-x-6 items-center text-sm md:text-md">
               <li>
                 <Link
                   href="/"
                   className={cn(
-                    "text-md font-sans hover:text-primary transition-colors",
+                    "font-sans hover:text-primary transition-colors",
                     isActive("/") ? "text-primary" : "text-muted-foreground"
                   )}
                 >

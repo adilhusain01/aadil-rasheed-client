@@ -4,6 +4,7 @@ import "./globals.css";
 import ClientBody from "./ClientBody";
 import Footer from "@/components/Footer";
 import StickyHeader from "@/components/StickyHeader";
+import Head from "next/head";
 
 const libreBaskerville = Libre_Baskerville({
   variable: "--font-libre-baskerville",
@@ -59,19 +60,27 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${libreBaskerville.variable} ${nunitoSans.variable}`}
-    >
-      <ClientBody>
-        <div className="flex flex-col min-h-screen pt-16">
-          <StickyHeader />
-          <main className="flex-1">{children}</main>
-          <div id="contact">
-            <Footer />
+    <>
+      <Head>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, shrink-to-fit=no"
+        />
+      </Head>
+      <html
+        lang="en"
+        className={`${libreBaskerville.variable} ${nunitoSans.variable}`}
+      >
+        <ClientBody>
+          <div className="flex flex-col min-h-screen pt-4 md:pt-16 px-4 md:px-0">
+            <StickyHeader />
+            <main className="flex-1">{children}</main>
+            <div id="contact">
+              <Footer />
+            </div>
           </div>
-        </div>
-      </ClientBody>
-    </html>
+        </ClientBody>
+      </html>
+    </>
   );
 }
