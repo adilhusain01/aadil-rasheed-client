@@ -25,7 +25,7 @@ export default function SocialPage() {
 
         <AnimatedSection delay={0.4}>
           <div className="max-w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-            <InstagramEmbed url="https://www.instagram.com/reel/DHQtTLrz5Le/?utm_source=ig_embed&amp;utm_campaign=loading" />
+            <InstagramEmbed url="https://www.instagram.com/reel/DG3G0vZzONi/?utm_source=ig_embed&amp;utm_campaign=loading" />
             <InstagramEmbed url="https://www.instagram.com/reel/CvHvIy0JKz1/?utm_source=ig_embed&amp;utm_campaign=loading" />
             <InstagramEmbed url="https://www.instagram.com/reel/DHGLv8oIfh_/?utm_source=ig_embed&amp;utm_campaign=loading" />
             <InstagramEmbed url="https://www.instagram.com/reel/DHBiGO2Twpl/?utm_source=ig_embed&amp;utm_campaign=loading" />
