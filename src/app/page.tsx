@@ -204,7 +204,8 @@ export default function Home() {
                 </div>
               ))}
             </div> */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {[
                 "https://res.cloudinary.com/djxuqljgr/image/upload/v1742233800/image_tqophb.jpg",
                 "https://res.cloudinary.com/djxuqljgr/image/upload/v1742234779/imagr2_l80wqe.jpg",
@@ -215,13 +216,14 @@ export default function Home() {
               ].map((image, index) => (
                 <div
                   key={index}
-                  className="relative h-[400px] overflow-hidden group"
+                  className="relative h-[150px] sm:h-[200px] md:h-[250px] lg:h-[300px] overflow-hidden group"
                 >
-                  <img
+                  <Image
                     src={image}
                     alt={`Smile gallery ${index + 1}`}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    style={{ transform: "translateZ(0)" }} // Force hardware acceleration
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    loading="lazy"
                   />
                 </div>
               ))}
