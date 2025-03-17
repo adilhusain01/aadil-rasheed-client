@@ -59,7 +59,7 @@ export default function ResourcesPage() {
           </div>
         </AnimatedSection>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-center">
+        <div className="grid grid-cols-1 gap-20 mb-16">
           {resources.map((resource, index) => (
             <AnimatedSection key={index} delay={0.2 * (index + 1)}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">

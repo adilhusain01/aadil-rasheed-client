@@ -33,7 +33,6 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
-    @apply px-4; /* Add padding for mobile */
   }
   h1,
   h2,
@@ -42,7 +41,6 @@
   h5,
   h6 {
     @apply font-serif font-normal;
-    @apply text-center; /* Center headings on mobile */
   }
 }
 
@@ -53,18 +51,4 @@
   .font-sans {
     font-family: var(--font-nunito-sans);
   }
-}
-
-@media (max-width: 640px) {
-  .text-xl {
-    font-size: 1.25rem; /* Adjust font size for mobile */
-  }
-  .text-3xl {
-    font-size: 1.875rem; /* Adjust font size for mobile */
-  }
-  .py-12 {
-    padding-top: 2rem; /* Adjust padding for mobile */
-    padding-bottom: 2rem; /* Adjust padding for mobile */
-  }
-  /* Add more responsive styles as needed */
 }
