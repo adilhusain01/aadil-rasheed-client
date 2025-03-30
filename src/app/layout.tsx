@@ -3,7 +3,7 @@ import { Libre_Baskerville, Nunito_Sans } from "next/font/google";
 import "./globals.css";
 import ClientBody from "./ClientBody";
 import Footer from "@/components/Footer";
-import StickyHeader from "@/components/StickyHeader";
+import Header from "@/components/Header";
 import Head from "next/head";
 
 const libreBaskerville = Libre_Baskerville({
@@ -65,7 +65,7 @@ export default function RootLayout({
       >
         <ClientBody>
           <div className="flex flex-col min-h-screen pt-4 md:pt-16">
-            <StickyHeader />
+            <Header />
             <main className="flex-1">{children}</main>
             <div id="contact">
               <Footer />

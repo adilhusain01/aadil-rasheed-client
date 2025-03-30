@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import ContactLink from "./ContactLink";
 
-export default function StickyHeader() {
+export default function Header() {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [show, setShow] = useState(true);
   const pathname = usePathname();
