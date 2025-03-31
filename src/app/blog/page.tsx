@@ -1,4 +1,4 @@
-import BlogPageClient from './client'
+import BlogPageClient from './client';
 
 // Set revalidation interval
 export const revalidate = 3600; // Revalidate every hour

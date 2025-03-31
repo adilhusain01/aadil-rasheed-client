@@ -1,7 +1,10 @@
 import { Suspense } from 'react';
 import BlogPostClient from './client';
-import { fetchBlogPosts } from "@/lib/api";
+import { fetchBlogPosts, type BlogPost } from "@/lib/api";
 import { notFound } from 'next/navigation';
+
+// Export the BlogPost type for components that need it
+export type { BlogPost };
 
 // Generate static paths for all blog posts at build time
 export async function generateStaticParams() {

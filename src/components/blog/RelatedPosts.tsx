@@ -40,7 +40,7 @@ export default function RelatedPosts({ currentPost }: RelatedPostsProps) {
               <Link href={`/blog/${post.slug}`}>
                 <div className="relative h-[200px] w-full mb-3 overflow-hidden">
                   <Image
-                    src={post.image}
+                    src={post.image || '/images/placeholder-blog.jpg'}
                     alt={post.title}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-105"

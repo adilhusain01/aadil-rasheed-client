@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { BlogPost } from "@/app/blog/[slug]/page";
+import type { BlogPost } from "@/lib/api";
 
 interface BlogCardProps {
   post: BlogPost;
@@ -13,7 +13,7 @@ export default function BlogCard({ post, className = "" }: BlogCardProps) {
       <Link href={`/blog/${post.slug}`}>
         <div className="relative h-[350px] w-full mb-4 overflow-hidden group">
           <Image
-            src={post.image}
+            src={post.image || '/images/placeholder-blog.jpg'}
             alt={post.title}
             fill
             className="object-cover transition-transform duration-700 group-hover:scale-105"
