@@ -30,8 +30,6 @@ export default function BlogPostClient({ slug }: { slug: string }) {
     async function loadPost() {
       try {
         setLoading(true);
-        console.log(`[Blog Post Client] Loading post with slug: ${slug}`);
-        
         // Implement retry logic for client-side fetching
         const maxRetries = 3;
         let retryCount = 0;
@@ -40,12 +38,10 @@ export default function BlogPostClient({ slug }: { slug: string }) {
         while (!success && retryCount < maxRetries) {
           try {
             const fetchedPost = await fetchBlogPostBySlug(slug);
-            console.log(`[Blog Post Client] Successfully loaded post: ${fetchedPost.title}`);
             setPost(fetchedPost);
             success = true;
           } catch (fetchError) {
             retryCount++;
-            console.warn(`[Blog Post Client] Retry ${retryCount}/${maxRetries} failed:`, fetchError);
             
             if (retryCount < maxRetries) {
               // Wait before retrying with exponential backoff
@@ -56,7 +52,6 @@ export default function BlogPostClient({ slug }: { slug: string }) {
           }
         }
       } catch (err) {
-        console.error(`[Blog Post Client] Error fetching blog post with slug ${slug}:`, err);
         setError('Failed to load blog post. Please try refreshing the page.');
       } finally {
         setLoading(false);
@@ -95,7 +90,6 @@ export default function BlogPostClient({ slug }: { slug: string }) {
   };
 
   if (loading) {
-    console.log(`[Blog Post Client] Loading state for slug: '${slug}'`);
     return (
       <PageTransition>
         <div className="mt-[5rem] px-4 flex justify-center items-center min-h-[50vh]">
@@ -106,7 +100,6 @@ export default function BlogPostClient({ slug }: { slug: string }) {
   }
 
   if (error || !post) {
-    console.error(`[Blog Post Client] Error or no post data for slug: '${slug}'`, { error, hasPost: !!post });
     return (
       <PageTransition>
         <div className="mt-[5rem] px-4 flex justify-center items-center min-h-[50vh]">

@@ -14,13 +14,11 @@ export default function BlogPageClient() {
   useEffect(() => {
     async function loadBlogPosts() {
       try {
-        console.log("[Blog Page] Loading blog posts");
         setLoading(true);
         const posts = await fetchBlogPosts();
-        console.log(`[Blog Page] Got ${posts.length} posts`);
         setBlogPosts(posts);
       } catch (error) {
-        console.error("[Blog Page] Error fetching blog posts:", error);
+        console.error("Error fetching blog posts:", error);
       } finally {
         setLoading(false);
       }

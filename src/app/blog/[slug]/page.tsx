@@ -9,17 +9,11 @@ export type { BlogPost };
 // Generate static paths for all blog posts at build time
 export async function generateStaticParams() {
   try {
-    console.log('Generating static params for blog posts');
-    
     // Fetch dynamic slugs from API
     const posts = await fetchBlogPosts();
-    const slugs = posts.map((post) => ({
+    return posts.map((post) => ({
       slug: post.slug,
     }));
-    
-    console.log(`Generated params for ${slugs.length} blog posts`);
-    console.log('Slugs being pre-rendered:', slugs.map(s => s.slug).join(', '));
-    return slugs;
   } catch (error) {
     console.error('Error generating static params:', error);
     // Return empty array - dynamic paths will be generated on demand
@@ -42,12 +36,8 @@ export const runtime = 'nodejs';
 export default function BlogPostPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
   
-  // Log the slug to help with debugging
-  console.log(`[Blog Post Page] Received slug: '${slug}'`);
-  
   // Only do minimal validation to prevent obviously invalid slugs
   if (!slug || typeof slug !== 'string' || slug.length < 1) {
-    console.error(`[Blog Post Page] Invalid slug detected: '${slug}'`);
     return notFound();
   }
   
