@@ -227,20 +227,157 @@ export async function fetchBlogPosts(): Promise<BlogPost[]> {
   }
 }
 
+// export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost> {
+//   // Ensure slug is properly encoded
+//   const encodedSlug = encodeURIComponent(slug);
+//   console.log(`[API Debug] fetchBlogPostBySlug() - Starting request to ${API_URL}/blog/${encodedSlug}`);
+  
+//   // Log information about the request for debugging
+//   console.log(`[API Debug] fetchBlogPostBySlug processing slug: '${slug}' (encoded: '${encodedSlug}')`); 
+
+//   // During build time or in development environment, return appropriate mock data
+//   if (isBuildTime() || process.env.NODE_ENV === 'development') {
+//     console.log(`[API Debug] Build time or development environment detected, returning mock data for blog post with slug: ${slug}`);
+    
+//     // For specific critical slugs, provide more detailed mock data
+//     if (slug === 'ham-pe-laazim-hai-ki-ham-waqt-ko-zaaya-na-karein') {
+//       return {
+//         _id: 'mock-urdu-post-id',
+//         title: 'ہم پے لازم ہے کہ ہم وقت کو ضایع نہ کریں',
+//         slug: 'ham-pe-laazim-hai-ki-ham-waqt-ko-zaaya-na-karein',
+//         excerpt: 'A thoughtful reflection on the value of time',
+//         content: '<p>This is detailed mock content for this specific Urdu blog post.</p>',
+//         date: '2023-10-15T12:00:00Z',
+//         likes: 42,
+//         isPublished: true,
+//         tags: ['urdu', 'poetry', 'reflection']
+//       };
+//     }
+    
+//     // Generic mock data for other slugs
+//     return {
+//       _id: `mock-id-${slug}`,
+//       title: `Mock Blog Post: ${slug.replace(/-/g, ' ')}`,
+//       slug: slug,
+//       excerpt: 'This is a mock blog post for build time',
+//       content: '<p>Mock content for static generation</p>',
+//       date: new Date().toISOString(),
+//       likes: 0,
+//       isPublished: true,
+//       tags: []
+//     };
+//   }
+  
+//   try {
+//     // Implement a retry mechanism for reliability
+//     let attempts = 0;
+//     const maxAttempts = 3;
+//     let lastError;
+    
+//     while (attempts < maxAttempts) {
+//       try {
+//         console.log(`[API Debug] Fetching from: ${API_URL}/blog/${encodedSlug} (Attempt ${attempts + 1}/${maxAttempts})`);
+//         const data = await safeFetch(`${API_URL}/blog/${encodedSlug}`);
+        
+//         // Validate response
+//         if (!data) {
+//           throw new Error('Empty response received');
+//         }
+        
+//         if (!data.success) {
+//           console.error(`[API Debug] API returned error: ${data.error}`);
+//           throw new Error(Array.isArray(data.error) ? data.error[0] : (data.error || 'Unknown error'));
+//         }
+        
+//         // Validate data structure
+//         if (!data.data || typeof data.data !== 'object') {
+//           console.error('[API Debug] Invalid response structure:', data);
+//           throw new Error('Invalid response structure');
+//         }
+        
+//         return data.data;
+//       } catch (error) {
+//         lastError = error;
+//         console.warn(`[API Debug] Attempt ${attempts + 1} failed:`, error);
+//         attempts++;
+        
+//         if (attempts < maxAttempts) {
+//           // Exponential backoff
+//           await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempts) * 500));
+//         }
+//       }
+//     }
+    
+//     // All attempts failed
+//     console.error(`[API Debug] All ${maxAttempts} attempts failed for slug ${slug}`);
+    
+//     // For a production environment, consider providing fallback content rather than throwing
+//     if (process.env.NODE_ENV === 'production') {
+//       console.log('[API Debug] Production environment detected, returning fallback content');
+      
+//       // Format the title nicely from the slug
+//       const formattedTitle = slug
+//         .replace(/-/g, ' ')
+//         .replace(/\./g, ' ')
+//         .replace(/_/g, ' ')
+//         .split(' ')
+//         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+//         .join(' ');
+      
+//       return {
+//         _id: `fallback-${slug}`,
+//         title: formattedTitle,
+//         slug: slug,
+//         excerpt: 'Content temporarily unavailable',
+//         content: '<p>This blog post is available on request. Please check back later.</p>',
+//         date: new Date().toISOString(),
+//         likes: 0,
+//         isPublished: true,
+//         tags: []
+//       };
+//     }
+    
+//     throw lastError;
+//   } catch (error) {
+//     console.error(`[API Debug] Error fetching blog post with slug ${slug}:`, error);
+    
+//     // In production, don't throw errors to the client - provide fallback content instead
+//     if (process.env.NODE_ENV === 'production') {
+//       return {
+//         _id: `error-${slug}`,
+//         title: `${slug.replace(/-/g, ' ')}`,
+//         slug: slug,
+//         excerpt: 'Content temporarily unavailable',
+//         content: '<p>We apologize, but this content is temporarily unavailable. Please check back later.</p>',
+//         date: new Date().toISOString(),
+//         likes: 0,
+//         isPublished: true,
+//         tags: []
+//       };
+//     }
+    
+//     throw error;
+//   }
+// }
+
 export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost> {
   // Ensure slug is properly encoded
   const encodedSlug = encodeURIComponent(slug);
   console.log(`[API Debug] fetchBlogPostBySlug() - Starting request to ${API_URL}/blog/${encodedSlug}`);
   
-  // Log information about the request for debugging
-  console.log(`[API Debug] fetchBlogPostBySlug processing slug: '${slug}' (encoded: '${encodedSlug}')`); 
-
-  // During build time or in development environment, return appropriate mock data
-  if (isBuildTime() || process.env.NODE_ENV === 'development') {
-    console.log(`[API Debug] Build time or development environment detected, returning mock data for blog post with slug: ${slug}`);
+  // Prepare fallback content based on slug
+  const getFallbackContent = (slugValue: string) => {
+    // Format the title nicely from the slug
+    const formattedTitle = slugValue
+      .replace(/-/g, ' ')
+      .replace(/\./g, ' ')
+      .replace(/_/g, ' ')
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
     
-    // For specific critical slugs, provide more detailed mock data
-    if (slug === 'ham-pe-laazim-hai-ki-ham-waqt-ko-zaaya-na-karein') {
+    // Special case for the Urdu post
+    if (slugValue === 'ham-pe-laazim-hai-ki-ham-waqt-ko-zaaya-na-karein') {
       return {
         _id: 'mock-urdu-post-id',
         title: 'ہم پے لازم ہے کہ ہم وقت کو ضایع نہ کریں',
@@ -254,18 +391,24 @@ export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost> {
       };
     }
     
-    // Generic mock data for other slugs
+    // Generic fallback for any other slug
     return {
-      _id: `mock-id-${slug}`,
-      title: `Mock Blog Post: ${slug.replace(/-/g, ' ')}`,
-      slug: slug,
-      excerpt: 'This is a mock blog post for build time',
-      content: '<p>Mock content for static generation</p>',
+      _id: `fallback-${slugValue}`,
+      title: formattedTitle,
+      slug: slugValue,
+      excerpt: 'Content temporarily unavailable',
+      content: '<p>This blog post content will be loaded from the server.</p>',
       date: new Date().toISOString(),
       likes: 0,
       isPublished: true,
       tags: []
     };
+  };
+
+  // During build time or in development environment, return appropriate mock data
+  if (isBuildTime() || process.env.NODE_ENV === 'development') {
+    console.log(`[API Debug] Build time or development environment detected, returning mock data for blog post with slug: ${slug}`);
+    return getFallbackContent(slug);
   }
   
   try {
@@ -308,55 +451,13 @@ export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost> {
       }
     }
     
-    // All attempts failed
+    // All attempts failed - return fallback rather than throwing
     console.error(`[API Debug] All ${maxAttempts} attempts failed for slug ${slug}`);
-    
-    // For a production environment, consider providing fallback content rather than throwing
-    if (process.env.NODE_ENV === 'production') {
-      console.log('[API Debug] Production environment detected, returning fallback content');
-      
-      // Format the title nicely from the slug
-      const formattedTitle = slug
-        .replace(/-/g, ' ')
-        .replace(/\./g, ' ')
-        .replace(/_/g, ' ')
-        .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-      
-      return {
-        _id: `fallback-${slug}`,
-        title: formattedTitle,
-        slug: slug,
-        excerpt: 'Content temporarily unavailable',
-        content: '<p>This blog post is available on request. Please check back later.</p>',
-        date: new Date().toISOString(),
-        likes: 0,
-        isPublished: true,
-        tags: []
-      };
-    }
-    
-    throw lastError;
+    return getFallbackContent(slug);
   } catch (error) {
     console.error(`[API Debug] Error fetching blog post with slug ${slug}:`, error);
-    
-    // In production, don't throw errors to the client - provide fallback content instead
-    if (process.env.NODE_ENV === 'production') {
-      return {
-        _id: `error-${slug}`,
-        title: `${slug.replace(/-/g, ' ')}`,
-        slug: slug,
-        excerpt: 'Content temporarily unavailable',
-        content: '<p>We apologize, but this content is temporarily unavailable. Please check back later.</p>',
-        date: new Date().toISOString(),
-        likes: 0,
-        isPublished: true,
-        tags: []
-      };
-    }
-    
-    throw error;
+    // Always provide fallback content instead of throwing errors
+    return getFallbackContent(slug);
   }
 }
 
