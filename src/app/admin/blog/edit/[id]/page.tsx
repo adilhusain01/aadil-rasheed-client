@@ -8,6 +8,7 @@ import Sidebar from "@/components/admin/Sidebar";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 import { Save, ArrowLeft, Image } from "lucide-react";
 import { BlogPost } from "@/types";
+import { fetchWithAuth } from "@/lib/api";
 
 export default function EditBlogPostPage() {
   // Use Next.js useParams hook instead of accepting params as a prop
@@ -34,15 +35,7 @@ export default function EditBlogPostPage() {
     const fetchBlogPost = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/id/${id}`, {
-          credentials: 'include',
-        });
-        
-        if (!res.ok) {
-          throw new Error('Failed to fetch blog post');
-        }
-        
-        const data = await res.json();
+        const data = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/blog/id/${id}`);
         
         // Format date for the input field (yyyy-mm-dd)
         let formattedDate = data.data.date;
@@ -56,13 +49,13 @@ export default function EditBlogPostPage() {
         }
         
         setFormData({
-          title: data.data.title,
-          slug: data.data.slug,
-          excerpt: data.data.excerpt,
-          content: data.data.content,
-          image: data.data.image,
-          date: formattedDate,
-          isPublished: data.data.isPublished !== false // default to true if not specified
+          title: data.data.title || "",
+          slug: data.data.slug || "",
+          excerpt: data.data.excerpt || "",
+          content: data.data.content || "",
+          image: data.data.image || "",
+          date: formattedDate || "",
+          isPublished: data.data.isPublished
         });
       } catch (error) {
         console.error('Error fetching blog post:', error);
@@ -98,28 +91,21 @@ export default function EditBlogPostPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError(null);
     setSubmitting(true);
-
+    setError(null);
+    
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/id/${id}`, {
+      // Update the blog post
+      await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/blog/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-        credentials: 'include',
+        body: JSON.stringify(formData)
       });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to update blog post');
-      }
-
+      
+      // Redirect to blog posts listing page
       router.push('/admin/blog');
     } catch (error) {
       console.error('Error updating blog post:', error);
-      setError(error instanceof Error ? error.message : 'Failed to update blog post');
+      setError('Failed to update blog post. Please try again.');
     } finally {
       setSubmitting(false);
     }

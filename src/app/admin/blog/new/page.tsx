@@ -7,6 +7,7 @@ import ProtectedRoute from "@/components/admin/ProtectedRoute";
 import Sidebar from "@/components/admin/Sidebar";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 import { Save, ArrowLeft, Image } from "lucide-react";
+import { fetchWithAuth } from "@/lib/api";
 
 export default function NewBlogPostPage() {
   const [formData, setFormData] = useState({
@@ -72,24 +73,15 @@ export default function NewBlogPostPage() {
     setSubmitting(true);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog`, {
+      await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/blog`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-        credentials: 'include',
+        body: JSON.stringify(formData)
       });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to create blog post');
-      }
 
       router.push('/admin/blog');
     } catch (error) {
       console.error('Error creating blog post:', error);
-      setError(error instanceof Error ? error.message : 'Failed to create blog post');
+      setError('Failed to create blog post. Please try again.');
     } finally {
       setSubmitting(false);
     }

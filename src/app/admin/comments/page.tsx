@@ -6,6 +6,7 @@ import Link from "next/link";
 import ProtectedRoute from "@/components/admin/ProtectedRoute";
 import Sidebar from "@/components/admin/Sidebar";
 import { Trash2, Check, Search, FileText, RefreshCw } from "lucide-react";
+import { fetchWithAuth } from "@/lib/api";
 
 interface Comment {
   _id: string;
@@ -36,25 +37,17 @@ export default function CommentsPage() {
     async function fetchComments() {
       try {
         setLoading(true);
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/comments/all`, {
-          credentials: 'include',
-        });
-        
-        if (!res.ok) {
-          throw new Error('Failed to fetch comments');
-        }
-        
-        const data = await res.json();
+        const data = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/blog/comments/all`);
         setComments(data.data);
         setFilteredComments(data.data);
       } catch (err) {
-        console.error('Error:', err);
+        console.error('Error fetching comments:', err);
         setError('Failed to load comments');
       } finally {
         setLoading(false);
       }
     }
-    
+
     fetchComments();
   }, []);
 
@@ -78,54 +71,50 @@ export default function CommentsPage() {
   const handleApprove = async (id: string) => {
     try {
       setCurrentAction(id);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/comments/${id}/approve`, {
-        method: 'PUT',
-        credentials: 'include',
+      
+      await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/blog/comments/${id}/approve`, {
+        method: 'PUT'
       });
       
-      if (!res.ok) {
-        throw new Error('Failed to approve comment');
-      }
-      
-      // Update comments state
+      // Update the comment in the local state
       setComments(prevComments => 
         prevComments.map(comment => 
           comment._id === id ? { ...comment, isApproved: true } : comment
         )
       );
       
-    } catch (err) {
-      console.error('Error approving comment:', err);
-      alert('Failed to approve comment');
+      // Update filtered comments too
+      setFilteredComments(prevComments => 
+        prevComments.map(comment => 
+          comment._id === id ? { ...comment, isApproved: true } : comment
+        )
+      );
+    } catch (error) {
+      console.error('Error approving comment:', error);
+      setError('Failed to approve comment. Please try again.');
     } finally {
       setCurrentAction(null);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this comment?')) return;
-    
-    try {
-      setCurrentAction(id);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/comments/${id}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-      
-      if (!res.ok) {
-        throw new Error('Failed to delete comment');
+    if (window.confirm('Are you sure you want to delete this comment? This action cannot be undone.')) {
+      try {
+        setCurrentAction(id);
+        
+        await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/blog/comments/${id}`, {
+          method: 'DELETE'
+        });
+        
+        // Remove the deleted comment from both states
+        setComments(prevComments => prevComments.filter(comment => comment._id !== id));
+        setFilteredComments(prevComments => prevComments.filter(comment => comment._id !== id));
+      } catch (error) {
+        console.error('Error deleting comment:', error);
+        setError('Failed to delete comment. Please try again.');
+      } finally {
+        setCurrentAction(null);
       }
-      
-      // Remove comment from state
-      setComments(prevComments => 
-        prevComments.filter(comment => comment._id !== id)
-      );
-      
-    } catch (err) {
-      console.error('Error deleting comment:', err);
-      alert('Failed to delete comment');
-    } finally {
-      setCurrentAction(null);
     }
   };
 

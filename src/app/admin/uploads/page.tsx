@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import ProtectedRoute from "@/components/admin/ProtectedRoute";
 import Sidebar from "@/components/admin/Sidebar";
 import { Upload, Trash2, Copy, Image, FileText, File, X, Search, ExternalLink } from "lucide-react";
+import { fetchWithAuth } from "@/lib/api";
 
 interface MediaFile {
   _id: string;
@@ -32,15 +33,7 @@ export default function UploadsPage() {
   const fetchMediaFiles = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload`, {
-        credentials: 'include',
-      });
-      
-      if (!res.ok) {
-        throw new Error('Failed to fetch media files');
-      }
-      
-      const data = await res.json();
+      const data = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/upload`);
       setMediaFiles(data.data);
     } catch (error) {
       console.error('Error fetching media files:', error);
@@ -55,14 +48,11 @@ export default function UploadsPage() {
   }, []);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
     const files = e.target.files;
-    if (!files || files.length === 0) return;
     
-    const formData = new FormData();
-    
-    // Add all selected files to the form data
-    for (let i = 0; i < files.length; i++) {
-      formData.append('files', files[i]);
+    if (!files || files.length === 0) {
+      return;
     }
     
     try {
@@ -70,6 +60,16 @@ export default function UploadsPage() {
       setUploadProgress(0);
       setError(null);
       
+      const formData = new FormData();
+      
+      for (let i = 0; i < files.length; i++) {
+        formData.append('files', files[i]);
+      }
+      
+      // Get token from localStorage
+      const token = localStorage.getItem('token');
+      
+      // Create XMLHttpRequest to track upload progress
       const xhr = new XMLHttpRequest();
       
       xhr.upload.addEventListener('progress', (event) => {
@@ -79,25 +79,19 @@ export default function UploadsPage() {
         }
       });
       
-      xhr.onload = async () => {
-        if (xhr.status === 200 || xhr.status === 201) {
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
           try {
-            const data = JSON.parse(xhr.responseText);
-            
-            if (data.success) {
-              // Refresh the media files list
-              await fetchMediaFiles();
-              
-              // Reset the file input
-              if (fileInputRef.current) {
-                fileInputRef.current.value = '';
-              }
+            const response = JSON.parse(xhr.responseText);
+            if (response.success) {
+              // Add the new files to the current list
+              setMediaFiles(prev => [...response.data, ...prev]);
             } else {
-              throw new Error(data.error || 'Upload failed');
+              setError(response.error || 'Upload failed');
             }
-          } catch (error) {
-            console.error('Error parsing response:', error);
-            setError('Failed to upload files. Please try again.');
+          } catch (e) {
+            console.error('Error parsing upload response:', e);
+            setError('Error processing server response');
           }
         } else {
           console.error('Upload failed with status:', xhr.status);
@@ -117,6 +111,12 @@ export default function UploadsPage() {
       
       xhr.open('POST', `${process.env.NEXT_PUBLIC_API_URL}/upload`, true);
       xhr.withCredentials = true;
+      
+      // Add the Authorization header if token exists
+      if (token) {
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      }
+      
       xhr.send(formData);
       
     } catch (error) {
@@ -133,14 +133,9 @@ export default function UploadsPage() {
         setIsDeleting(true);
         setDeleteId(id);
         
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/${id}`, {
-          method: 'DELETE',
-          credentials: 'include',
+        await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/upload/${id}`, {
+          method: 'DELETE'
         });
-        
-        if (!res.ok) {
-          throw new Error('Failed to delete file');
-        }
         
         // Remove the deleted file from the state
         setMediaFiles(prevFiles => prevFiles.filter(file => file._id !== id));

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import ProtectedRoute from "@/components/admin/ProtectedRoute";
 import Sidebar from "@/components/admin/Sidebar";
 import { Trash2, Mail, DownloadCloud, Search } from "lucide-react";
+import { fetchWithAuth } from "@/lib/api";
 
 interface Subscriber {
   _id: string;
@@ -25,15 +26,7 @@ export default function SubscribersPage() {
   const fetchSubscribers = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subscription`, {
-        credentials: 'include',
-      });
-      
-      if (!res.ok) {
-        throw new Error('Failed to fetch subscribers');
-      }
-      
-      const data = await res.json();
+      const data = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/subscription`);
       setSubscribers(data.data);
     } catch (error) {
       console.error('Error fetching subscribers:', error);
@@ -51,55 +44,20 @@ export default function SubscribersPage() {
     setSearchTerm(e.target.value);
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this subscriber? This action cannot be undone.')) {
-      try {
-        setIsDeleting(true);
-        setDeleteId(id);
-        
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subscription/${id}`, {
-          method: 'DELETE',
-          credentials: 'include',
-        });
-        
-        if (!res.ok) {
-          throw new Error('Failed to delete subscriber');
-        }
-        
-        // Remove the deleted subscriber from the state
-        setSubscribers(prevSubscribers => prevSubscribers.filter(sub => sub._id !== id));
-        setSelectedSubscribers(prev => prev.filter(subId => subId !== id));
-      } catch (error) {
-        console.error('Error deleting subscriber:', error);
-        setError('Failed to delete subscriber. Please try again.');
-      } finally {
-        setIsDeleting(false);
-        setDeleteId(null);
-      }
-    }
-  };
-
-  const handleBulkDelete = async () => {
+  const handleDeleteSelected = async () => {
     if (selectedSubscribers.length === 0) return;
     
-    if (window.confirm(`Are you sure you want to delete ${selectedSubscribers.length} subscribers? This action cannot be undone.`)) {
+    if (window.confirm(`Are you sure you want to delete ${selectedSubscribers.length} selected subscriber(s)? This action cannot be undone.`)) {
       try {
         setIsDeleting(true);
         
-        // In a real application, this would be a bulk operation
-        // For simplicity, we'll delete them one by one
-        for (const id of selectedSubscribers) {
-          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subscription/${id}`, {
-            method: 'DELETE',
-            credentials: 'include',
-          });
-        }
+        await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/subscription/batch`, {
+          method: 'DELETE',
+          body: JSON.stringify({ ids: selectedSubscribers })
+        });
         
-        // Remove the deleted subscribers from the state
-        setSubscribers(prevSubscribers => 
-          prevSubscribers.filter(sub => !selectedSubscribers.includes(sub._id))
-        );
-        
+        // Refresh the subscribers list
+        fetchSubscribers();
         // Clear selection
         setSelectedSubscribers([]);
         setSelectAll(false);
@@ -112,29 +70,56 @@ export default function SubscribersPage() {
     }
   };
 
-  const handleExportCSV = () => {
-    // Create CSV content
-    const headers = ["Email", "Status", "Date"];
-    const rows = subscribers.map(sub => [
-      sub.email,
-      sub.isActive ? "Active" : "Inactive",
-      new Date(sub.createdAt).toLocaleDateString()
-    ]);
-    
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.join(','))
-    ].join('\n');
-    
-    // Create a blob and download
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `subscribers_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this subscriber? This action cannot be undone.')) {
+      try {
+        setIsDeleting(true);
+        setDeleteId(id);
+        
+        await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/subscription/${id}`, {
+          method: 'DELETE'
+        });
+        
+        // Refresh the subscribers list
+        fetchSubscribers();
+      } catch (error) {
+        console.error('Error deleting subscriber:', error);
+        setError('Failed to delete subscriber. Please try again.');
+      } finally {
+        setIsDeleting(false);
+        setDeleteId(null);
+      }
+    }
+  };
+
+  const exportSubscribers = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/subscription/export`);
+      
+      // Create a CSV file from the data
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "Email,Subscription Date\n";
+      
+      data.data.forEach((subscriber: Subscriber) => {
+        const dateString = new Date(subscriber.createdAt).toLocaleDateString();
+        csvContent += `${subscriber.email},${dateString}\n`;
+      });
+      
+      // Create a download link and trigger it
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `subscribers_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error exporting subscribers:', error);
+      setError('Failed to export subscribers. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSelectAll = () => {
@@ -184,7 +169,7 @@ export default function SubscribersPage() {
               </div>
               <div className="flex space-x-2">
                 <button 
-                  onClick={handleExportCSV}
+                  onClick={exportSubscribers}
                   className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md flex items-center"
                 >
                   <DownloadCloud size={20} className="mr-2" />
@@ -192,7 +177,7 @@ export default function SubscribersPage() {
                 </button>
                 {selectedSubscribers.length > 0 && (
                   <button 
-                    onClick={handleBulkDelete}
+                    onClick={handleDeleteSelected}
                     disabled={isDeleting}
                     className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md flex items-center"
                   >

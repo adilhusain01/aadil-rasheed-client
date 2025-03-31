@@ -4,6 +4,7 @@ import { useState, useEffect, FormEvent } from "react";
 import ProtectedRoute from "@/components/admin/ProtectedRoute";
 import Sidebar from "@/components/admin/Sidebar";
 import { Plus, Edit, Trash2, X, Save, Instagram, Facebook, Twitter } from "lucide-react";
+import { fetchWithAuth } from "@/lib/api";
 
 interface SocialMediaLink {
   _id: string;
@@ -33,15 +34,7 @@ export default function SocialMediaPage() {
   const fetchSocialLinks = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/social/admin/all`, {
-        credentials: 'include',
-      });
-      
-      if (!res.ok) {
-        throw new Error('Failed to fetch social media links');
-      }
-      
-      const data = await res.json();
+      const data = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/social/admin/all`);
       setSocialLinks(data.data);
     } catch (error) {
       console.error('Error fetching social media links:', error);
@@ -105,37 +98,27 @@ export default function SocialMediaPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError(null);
     setSubmitting(true);
-
+    setError(null);
+    
     try {
-      let url = `${process.env.NEXT_PUBLIC_API_URL}/social`;
-      let method = 'POST';
+      const url = isEditing 
+        ? `${process.env.NEXT_PUBLIC_API_URL}/social/${selectedLink?._id}` 
+        : `${process.env.NEXT_PUBLIC_API_URL}/social`;
       
-      if (isEditing && selectedLink) {
-        url = `${url}/${selectedLink._id}`;
-        method = 'PUT';
-      }
-
-      const res = await fetch(url, {
+      const method = isEditing ? 'PUT' : 'POST';
+      
+      await fetchWithAuth(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-        credentials: 'include',
+        body: JSON.stringify(formData)
       });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || `Failed to ${isEditing ? 'update' : 'create'} social media link`);
-      }
-
-      handleCloseModal();
-      fetchSocialLinks();
+      
+      // Close modal and refresh list
+      setIsModalOpen(false);
+      await fetchSocialLinks();
     } catch (error) {
-      console.error(`Error ${isEditing ? 'updating' : 'creating'} social media link:`, error);
-      setError(error instanceof Error ? error.message : `Failed to ${isEditing ? 'update' : 'create'} social media link`);
+      console.error('Error saving social media link:', error);
+      setError('Failed to save social media link. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -147,17 +130,12 @@ export default function SocialMediaPage() {
         setIsDeleting(true);
         setDeleteId(id);
         
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/social/${id}`, {
-          method: 'DELETE',
-          credentials: 'include',
+        await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/social/${id}`, {
+          method: 'DELETE'
         });
         
-        if (!res.ok) {
-          throw new Error('Failed to delete social media link');
-        }
-        
         // Refresh the social links list
-        await fetchSocialLinks();
+        fetchSocialLinks();
       } catch (error) {
         console.error('Error deleting social media link:', error);
         setError('Failed to delete social media link. Please try again.');
@@ -165,6 +143,24 @@ export default function SocialMediaPage() {
         setIsDeleting(false);
         setDeleteId(null);
       }
+    }
+  };
+
+  const handleToggleActive = async (id: string, currentActiveState: boolean) => {
+    try {
+      await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/social/${id}/toggle`, {
+        method: 'PUT'
+      });
+      
+      // Update the local state
+      setSocialLinks(prevLinks => 
+        prevLinks.map(link => 
+          link._id === id ? { ...link, isActive: !currentActiveState } : link
+        )
+      );
+    } catch (error) {
+      console.error('Error toggling social media link active state:', error);
+      setError('Failed to update social media link. Please try again.');
     }
   };
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import ProtectedRoute from "@/components/admin/ProtectedRoute";
 import Sidebar from "@/components/admin/Sidebar";
 import { Eye, Trash2, X, Mail, CheckCircle, XCircle } from "lucide-react";
+import { fetchWithAuth } from "@/lib/api";
 
 interface ContactMessage {
   _id: string;
@@ -28,15 +29,7 @@ export default function MessagesPage() {
   const fetchMessages = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contact`, {
-        credentials: 'include',
-      });
-      
-      if (!res.ok) {
-        throw new Error('Failed to fetch contact messages');
-      }
-      
-      const data = await res.json();
+      const data = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/contact`);
       setMessages(data.data);
     } catch (error) {
       console.error('Error fetching contact messages:', error);
@@ -58,19 +51,16 @@ export default function MessagesPage() {
     if (!message.isRead) {
       try {
         setMarkingAsRead(message._id);
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contact/${message._id}/read`, {
-          method: 'PUT',
-          credentials: 'include',
+        await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/contact/${message._id}/read`, {
+          method: 'PUT'
         });
         
-        if (res.ok) {
-          // Update the messages list with the read status
-          setMessages(prevMessages => 
-            prevMessages.map(msg => 
-              msg._id === message._id ? { ...msg, isRead: true } : msg
-            )
-          );
-        }
+        // Update the messages list with the read status
+        setMessages(prevMessages => 
+          prevMessages.map(msg => 
+            msg._id === message._id ? { ...msg, isRead: true } : msg
+          )
+        );
       } catch (error) {
         console.error('Error marking message as read:', error);
       } finally {
@@ -84,33 +74,23 @@ export default function MessagesPage() {
     setSelectedMessage(null);
   };
 
-  const handleMarkAsRead = async (id: string, isRead: boolean) => {
+  const handleMarkAsRead = async (id: string) => {
     try {
       setMarkingAsRead(id);
-      const endpoint = isRead ? 'unread' : 'read';
       
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contact/${id}/${endpoint}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
+      await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/contact/${id}/read`, {
+        method: 'PUT'
       });
       
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || `Failed to mark message as ${isRead ? 'unread' : 'read'}`);
-      }
-      
-      // Update the messages list with the new read status
+      // Update the message in the local state
       setMessages(prevMessages => 
         prevMessages.map(msg => 
-          msg._id === id ? { ...msg, isRead: !isRead } : msg
+          msg._id === id ? { ...msg, isRead: true } : msg
         )
       );
     } catch (error) {
-      console.error(`Error marking message as ${isRead ? 'unread' : 'read'}:`, error);
-      setError(`Failed to mark message as ${isRead ? 'unread' : 'read'}. Please try again.`);
+      console.error('Error marking message as read:', error);
+      setError('Failed to mark message as read. Please try again.');
     } finally {
       setMarkingAsRead(null);
     }
@@ -122,25 +102,15 @@ export default function MessagesPage() {
         setIsDeleting(true);
         setDeleteId(id);
         
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contact/${id}`, {
-          method: 'DELETE',
-          credentials: 'include',
+        await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/contact/${id}`, {
+          method: 'DELETE'
         });
-        
-        if (!res.ok) {
-          throw new Error('Failed to delete contact message');
-        }
         
         // Remove the deleted message from the state
         setMessages(prevMessages => prevMessages.filter(msg => msg._id !== id));
-        
-        // If the deleted message is currently being displayed, close the modal
-        if (selectedMessage && selectedMessage._id === id) {
-          handleCloseModal();
-        }
       } catch (error) {
-        console.error('Error deleting contact message:', error);
-        setError('Failed to delete contact message. Please try again.');
+        console.error('Error deleting message:', error);
+        setError('Failed to delete message. Please try again.');
       } finally {
         setIsDeleting(false);
         setDeleteId(null);
@@ -241,11 +211,25 @@ export default function MessagesPage() {
                             <Eye size={18} />
                           </button>
                           <button
-                            onClick={() => handleMarkAsRead(message._id, message.isRead)}
-                            className={`${message.isRead ? 'text-blue-600 hover:text-blue-900' : 'text-green-600 hover:text-green-900'} mr-3`}
+                            onClick={() => handleMarkAsRead(message._id)}
                             disabled={markingAsRead === message._id}
+                            className={`inline-flex items-center px-4 py-2 border rounded-md text-sm font-medium ${
+                              message.isRead 
+                              ? 'border-blue-300 text-blue-700 bg-blue-50 hover:bg-blue-100' 
+                              : 'border-green-300 text-green-700 bg-green-50 hover:bg-green-100'
+                            }`}
                           >
-                            {message.isRead ? <XCircle size={18} /> : <CheckCircle size={18} />}
+                            {message.isRead ? (
+                              <>
+                                <XCircle size={18} className="mr-2" />
+                                Mark as Unread
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle size={18} className="mr-2" />
+                                Mark as Read
+                              </>
+                            )}
                           </button>
                           <button
                             onClick={() => handleDelete(message._id)}
@@ -309,7 +293,7 @@ export default function MessagesPage() {
             <div className="flex justify-between p-6 border-t bg-gray-50">
               <div>
                 <button
-                  onClick={() => handleMarkAsRead(selectedMessage._id, selectedMessage.isRead)}
+                  onClick={() => handleMarkAsRead(selectedMessage._id)}
                   disabled={markingAsRead === selectedMessage._id}
                   className={`inline-flex items-center px-4 py-2 border rounded-md text-sm font-medium ${
                     selectedMessage.isRead 
