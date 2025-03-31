@@ -1,25 +1,25 @@
+// Define server-side configuration for blog listing page
+import { fetchBlogPosts } from "@/lib/api";
+import type { BlogPost } from "@/lib/api";
+
+// Set revalidation interval
+export const revalidate = 3600; // Revalidate every hour
+
+// This allows the blog index page to be statically generated
+// with fresh data at build time, and revalidated periodically
+export default function BlogPage() {
+  return <BlogPageClient />;
+}
+
+// Client component for the interactive parts
 "use client";
 
 import { useEffect, useState } from "react";
 import PageTransition from "@/components/PageTransition";
 import AnimatedSection from "@/components/AnimatedSection";
 import BlogCard from "@/components/blog/BlogCard";
-import { fetchBlogPosts } from "@/lib/api";
 
-// Blog Post type
-export interface BlogPost {
-  _id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  content: string;
-  image?: string;
-  date: string;
-  likes?: number;
-  isPublished: boolean;
-}
-
-export default function BlogPage() {
+function BlogPageClient() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
 

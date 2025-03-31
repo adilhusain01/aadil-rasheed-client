@@ -74,12 +74,19 @@ export interface CommentData {
   content: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+// Define and normalize the API base URL
+let API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
+// Ensure API_URL is properly formatted (no trailing slash)
+if (API_URL.endsWith('/')) {
+  API_URL = API_URL.slice(0, -1);
+}
 
 // More useful logging for debugging
 console.log(`[API Debug] API_URL: ${API_URL}`);
 console.log(`[API Debug] Environment: ${process.env.NODE_ENV}`);
 console.log(`[API Debug] Is server: ${typeof window === 'undefined'}`);
+console.log(`[API Debug] NEXT_PUBLIC_API_URL env: ${process.env.NEXT_PUBLIC_API_URL}`);
 
 // Create a safer fetch function with proper credentials
 const safeFetch = async (url: string, options: RequestInit = {}) => {
@@ -213,9 +220,11 @@ export async function fetchBlogPosts(): Promise<BlogPost[]> {
 }
 
 export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost> {
-  console.log(`[API Debug] fetchBlogPostBySlug() - Starting request to ${API_URL}/blog/${slug}`);
+  // Ensure slug is properly encoded
+  const encodedSlug = encodeURIComponent(slug);
+  console.log(`[API Debug] fetchBlogPostBySlug() - Starting request to ${API_URL}/blog/${encodedSlug}`);
   
-  // During build time, return mock data
+  // During build time, return mock data with all required fields
   if (isBuildTime()) {
     console.log('[API Debug] Build time detected, returning mock data for blog post');
     return {
@@ -226,20 +235,54 @@ export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost> {
       content: '<p>Mock content</p>',
       date: new Date().toISOString(),
       likes: 0,
-      isPublished: true
+      isPublished: true,
+      tags: []
     };
   }
   
   try {
-    console.log(`[API Debug] Fetching from: ${API_URL}/blog/${slug}`);
-    const data = await safeFetch(`${API_URL}/blog/${slug}`);
+    // Implement a retry mechanism for reliability
+    let attempts = 0;
+    const maxAttempts = 3;
+    let lastError;
     
-    if (!data.success) {
-      console.error(`[API Debug] API returned error: ${data.error}`);
-      throw new Error(Array.isArray(data.error) ? data.error[0] : data.error);
+    while (attempts < maxAttempts) {
+      try {
+        console.log(`[API Debug] Fetching from: ${API_URL}/blog/${encodedSlug} (Attempt ${attempts + 1}/${maxAttempts})`);
+        const data = await safeFetch(`${API_URL}/blog/${encodedSlug}`);
+        
+        // Validate response
+        if (!data) {
+          throw new Error('Empty response received');
+        }
+        
+        if (!data.success) {
+          console.error(`[API Debug] API returned error: ${data.error}`);
+          throw new Error(Array.isArray(data.error) ? data.error[0] : (data.error || 'Unknown error'));
+        }
+        
+        // Validate data structure
+        if (!data.data || typeof data.data !== 'object') {
+          console.error('[API Debug] Invalid response structure:', data);
+          throw new Error('Invalid response structure');
+        }
+        
+        return data.data;
+      } catch (error) {
+        lastError = error;
+        console.warn(`[API Debug] Attempt ${attempts + 1} failed:`, error);
+        attempts++;
+        
+        if (attempts < maxAttempts) {
+          // Exponential backoff
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempts) * 500));
+        }
+      }
     }
     
-    return data.data;
+    // All attempts failed
+    console.error(`[API Debug] All ${maxAttempts} attempts failed for slug ${slug}`);
+    throw lastError;
   } catch (error) {
     console.error(`[API Debug] Error fetching blog post with slug ${slug}:`, error);
     throw error;
@@ -463,6 +506,12 @@ export async function submitReply(commentId: string, replyData: CommentData, rec
       throw new Error(Array.isArray(data.error) ? data.error[0] : data.error);
     }
     
+    return data.data;
+  } catch (error) {
+    console.error('[API Debug] Error submitting reply:', error);
+    throw error;
+  }
+}
     return data.data;
   } catch (error) {
     console.error('[API Debug] Error submitting reply:', error);

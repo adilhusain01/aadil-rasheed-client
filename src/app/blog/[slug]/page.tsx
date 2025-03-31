@@ -1,21 +1,44 @@
+// Server component wrapper for static site generation
+import { fetchBlogPosts } from "@/lib/api";
+import type { BlogPost } from "@/lib/api";
+
+// Generate static paths for all blog posts at build time
+export async function generateStaticParams() {
+  try {
+    console.log('Generating static params for blog posts');
+    const posts = await fetchBlogPosts();
+    return posts.map((post) => ({
+      slug: post.slug,
+    }));
+  } catch (error) {
+    console.error('Error generating static params:', error);
+    return [];
+  }
+}
+
+// Set revalidation interval
+export const revalidate = 3600; // Revalidate pages every hour
+
+// This is the main page component wrapper
+export default function BlogPostPage({ params }: { params: { slug: string } }) {
+  const { slug } = params;
+  return <BlogPostClient slug={slug} />;
+}
+
+// Client component for the interactive parts
 "use client";
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
 import { notFound } from "next/navigation";
 import PageTransition from "@/components/PageTransition";
 import AnimatedSection from "@/components/AnimatedSection";
 import RelatedPosts from "@/components/blog/RelatedPosts";
 import CommentSection from "@/components/blog/CommentSection";
-import { fetchBlogPosts, fetchBlogPostBySlug, likeBlogPost } from "@/lib/api";
-import type { BlogPost } from "@/lib/api"; // Import the type instead of redefining
+import { fetchBlogPostBySlug, likeBlogPost } from "@/lib/api";
 
-export default function BlogPostPage() {
-  // Use useParams hook instead of props to get params
-  const params = useParams();
-  const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug as string;
+function BlogPostClient({ slug }: { slug: string }) {
   
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
