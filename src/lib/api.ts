@@ -81,6 +81,46 @@ console.log(`[API Debug] API_URL: ${API_URL}`);
 console.log(`[API Debug] Environment: ${process.env.NODE_ENV}`);
 console.log(`[API Debug] Is server: ${typeof window === 'undefined'}`);
 
+// Create a safer fetch function with proper credentials
+const safeFetch = async (url: string, options: RequestInit = {}) => {
+  // Set credentials to include by default for all requests
+  const fetchOptions: RequestInit = {
+    ...options,
+    credentials: 'include', 
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers
+    }
+  };
+  
+  console.log(`[API Debug] Fetching with options:`, {
+    url,
+    method: fetchOptions.method || 'GET',
+    credentials: fetchOptions.credentials
+  });
+  
+  try {
+    const response = await fetch(url, fetchOptions);
+    console.log(`[API Debug] Response status: ${response.status}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    // Check if response can be parsed as JSON
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      return await response.json();
+    } else {
+      console.error('[API Debug] Response is not JSON:', contentType);
+      return { success: false, error: 'Invalid response format' };
+    }
+  } catch (error) {
+    console.error(`[API Debug] Fetch error for ${url}:`, error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+};
+
 // Helper to check if we're in build/SSG mode
 const isBuildTime = () => {
   const isBuild = process.env.NODE_ENV === 'production' && typeof window === 'undefined';
@@ -105,27 +145,17 @@ export async function fetchBlogPosts(): Promise<BlogPost[]> {
 
   try {
     console.log(`[API Debug] Fetching from: ${API_URL}/blog`);
-    const response = await fetch(`${API_URL}/blog`);
-    console.log(`[API Debug] Response status: ${response.status}`);
-    
-    // Handle 404 errors gracefully
-    if (response.status === 404) {
-      console.error('[API Debug] Blog API endpoint not found (404)');
-      return [];
-    }
-    
-    const data: ApiResponse<BlogPost[]> = await response.json();
-    console.log(`[API Debug] Response parsed, success: ${data.success}, items: ${data.data?.length || 0}`);
+    const data = await safeFetch(`${API_URL}/blog`);
     
     if (!data.success) {
       console.error(`[API Debug] API returned error: ${data.error}`);
-      throw new Error(Array.isArray(data.error) ? data.error[0] : data.error);
+      return [];
     }
     
+    console.log(`[API Debug] Got ${data.data?.length || 0} blog posts`);
     return data.data;
   } catch (error) {
-    console.error('[API Debug] Error fetching blog posts:', error);
-    // Return empty array instead of throwing during build
+    console.error('[API Debug] Error fetchBlogPosts:', error);
     return [];
   }
 }
@@ -150,17 +180,7 @@ export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost> {
   
   try {
     console.log(`[API Debug] Fetching from: ${API_URL}/blog/${slug}`);
-    const response = await fetch(`${API_URL}/blog/${slug}`);
-    console.log(`[API Debug] Response status: ${response.status}`);
-    
-    // Handle 404 errors gracefully
-    if (response.status === 404) {
-      console.error(`[API Debug] Blog post with slug ${slug} not found (404)`);
-      throw new Error('Blog post not found');
-    }
-    
-    const data: ApiResponse<BlogPost> = await response.json();
-    console.log(`[API Debug] Response parsed, success: ${data.success}`);
+    const data = await safeFetch(`${API_URL}/blog/${slug}`);
     
     if (!data.success) {
       console.error(`[API Debug] API returned error: ${data.error}`);
@@ -179,16 +199,9 @@ export async function likeBlogPost(id: string): Promise<BlogPost> {
   
   try {
     console.log(`[API Debug] Fetching from: ${API_URL}/blog/${id}/like`);
-    const response = await fetch(`${API_URL}/blog/${id}/like`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      }
+    const data = await safeFetch(`${API_URL}/blog/${id}/like`, {
+      method: 'PUT'
     });
-    console.log(`[API Debug] Response status: ${response.status}`);
-    
-    const data: ApiResponse<BlogPost> = await response.json();
-    console.log(`[API Debug] Response parsed, success: ${data.success}`);
     
     if (!data.success) {
       console.error(`[API Debug] API returned error: ${data.error}`);
@@ -214,27 +227,17 @@ export async function fetchSocialMediaLinks(): Promise<SocialMediaLink[]> {
   
   try {
     console.log(`[API Debug] Fetching from: ${API_URL}/social`);
-    const response = await fetch(`${API_URL}/social`);
-    console.log(`[API Debug] Response status: ${response.status}`);
-    
-    // Handle 404 errors gracefully
-    if (response.status === 404) {
-      console.error('[API Debug] Social API endpoint not found (404)');
-      return [];
-    }
-    
-    const data: ApiResponse<SocialMediaLink[]> = await response.json();
-    console.log(`[API Debug] Response parsed, success: ${data.success}, items: ${data.data?.length || 0}`);
+    const data = await safeFetch(`${API_URL}/social`);
     
     if (!data.success) {
       console.error(`[API Debug] API returned error: ${data.error}`);
-      throw new Error(Array.isArray(data.error) ? data.error[0] : data.error);
+      return [];
     }
     
+    console.log(`[API Debug] Got ${data.data?.length || 0} social links`);
     return data.data;
   } catch (error) {
-    console.error('[API Debug] Error fetching social media links:', error);
-    // Return empty array instead of throwing during build
+    console.error('[API Debug] Error fetchSocialMediaLinks:', error);
     return [];
   }
 }
@@ -251,27 +254,17 @@ export async function fetchGalleryImages(): Promise<GalleryImage[]> {
   
   try {
     console.log(`[API Debug] Fetching from: ${API_URL}/gallery`);
-    const response = await fetch(`${API_URL}/gallery`);
-    console.log(`[API Debug] Response status: ${response.status}`);
-    
-    // Handle 404 errors gracefully
-    if (response.status === 404) {
-      console.error('[API Debug] Gallery API endpoint not found (404)');
-      return [];
-    }
-    
-    const data: ApiResponse<GalleryImage[]> = await response.json();
-    console.log(`[API Debug] Response parsed, success: ${data.success}, items: ${data.data?.length || 0}`);
+    const data = await safeFetch(`${API_URL}/gallery`);
     
     if (!data.success) {
       console.error(`[API Debug] API returned error: ${data.error}`);
-      throw new Error(Array.isArray(data.error) ? data.error[0] : data.error);
+      return [];
     }
     
+    console.log(`[API Debug] Got ${data.data?.length || 0} gallery images`);
     return data.data;
   } catch (error) {
-    console.error('[API Debug] Error fetching gallery images:', error);
-    // Return empty array instead of throwing during build
+    console.error('[API Debug] Error fetchGalleryImages:', error);
     return [];
   }
 }
@@ -282,20 +275,13 @@ export async function submitContactForm(formData: ContactFormData, recaptchaToke
   
   try {
     console.log(`[API Debug] Fetching from: ${API_URL}/contact`);
-    const response = await fetch(`${API_URL}/contact`, {
+    const data = await safeFetch(`${API_URL}/contact`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify({
         ...formData,
         recaptchaToken
       })
     });
-    console.log(`[API Debug] Response status: ${response.status}`);
-    
-    const data: ApiResponse<{ message: string }> = await response.json();
-    console.log(`[API Debug] Response parsed, success: ${data.success}`);
     
     if (!data.success) {
       console.error(`[API Debug] API returned error: ${data.error}`);
@@ -315,20 +301,13 @@ export async function submitSubscription(formData: SubscriptionData, recaptchaTo
   
   try {
     console.log(`[API Debug] Fetching from: ${API_URL}/subscription`);
-    const response = await fetch(`${API_URL}/subscription`, {
+    const data = await safeFetch(`${API_URL}/subscription`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify({
         ...formData,
         recaptchaToken
       })
     });
-    console.log(`[API Debug] Response status: ${response.status}`);
-    
-    const data: ApiResponse<{ message: string }> = await response.json();
-    console.log(`[API Debug] Response parsed, success: ${data.success}`);
     
     if (!data.success) {
       console.error(`[API Debug] API returned error: ${data.error}`);
@@ -351,15 +330,10 @@ export async function uploadImage(file: File): Promise<{ imageUrl: string }> {
     const formData = new FormData();
     formData.append('image', file);
     
-    const response = await fetch(`${API_URL}/upload`, {
+    const data = await safeFetch(`${API_URL}/upload`, {
       method: 'POST',
-      credentials: 'include',
       body: formData
     });
-    console.log(`[API Debug] Response status: ${response.status}`);
-    
-    const data: ApiResponse<{ imageUrl: string }> = await response.json();
-    console.log(`[API Debug] Response parsed, success: ${data.success}`);
     
     if (!data.success) {
       console.error(`[API Debug] API returned error: ${data.error}`);
@@ -379,21 +353,18 @@ export async function fetchBlogComments(blogId: string): Promise<Comment[]> {
   
   try {
     console.log(`[API Debug] Fetching from: ${API_URL}/blog/${blogId}/comments`);
-    const response = await fetch(`${API_URL}/blog/${blogId}/comments`);
-    console.log(`[API Debug] Response status: ${response.status}`);
-    
-    const data: ApiResponse<Comment[]> = await response.json();
-    console.log(`[API Debug] Response parsed, success: ${data.success}, items: ${data.data?.length || 0}`);
+    const data = await safeFetch(`${API_URL}/blog/${blogId}/comments`);
     
     if (!data.success) {
       console.error(`[API Debug] API returned error: ${data.error}`);
-      throw new Error(Array.isArray(data.error) ? data.error[0] : data.error);
+      return [];
     }
     
+    console.log(`[API Debug] Got ${data.data?.length || 0} comments`);
     return data.data;
   } catch (error) {
     console.error('[API Debug] Error fetching comments:', error);
-    throw error;
+    return [];
   }
 }
 
@@ -402,20 +373,13 @@ export async function submitComment(blogId: string, commentData: CommentData, re
   
   try {
     console.log(`[API Debug] Fetching from: ${API_URL}/blog/${blogId}/comments`);
-    const response = await fetch(`${API_URL}/blog/${blogId}/comments`, {
+    const data = await safeFetch(`${API_URL}/blog/${blogId}/comments`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify({
         ...commentData,
         recaptchaToken
       })
     });
-    console.log(`[API Debug] Response status: ${response.status}`);
-    
-    const data: ApiResponse<Comment> = await response.json();
-    console.log(`[API Debug] Response parsed, success: ${data.success}`);
     
     if (!data.success) {
       console.error(`[API Debug] API returned error: ${data.error}`);
@@ -434,20 +398,13 @@ export async function submitReply(commentId: string, replyData: CommentData, rec
   
   try {
     console.log(`[API Debug] Fetching from: ${API_URL}/blog/comments/${commentId}/replies`);
-    const response = await fetch(`${API_URL}/blog/comments/${commentId}/replies`, {
+    const data = await safeFetch(`${API_URL}/blog/comments/${commentId}/replies`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify({
         ...replyData,
         recaptchaToken
       })
     });
-    console.log(`[API Debug] Response status: ${response.status}`);
-    
-    const data: ApiResponse<Comment> = await response.json();
-    console.log(`[API Debug] Response parsed, success: ${data.success}`);
     
     if (!data.success) {
       console.error(`[API Debug] API returned error: ${data.error}`);
