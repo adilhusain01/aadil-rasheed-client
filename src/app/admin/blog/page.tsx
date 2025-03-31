@@ -26,7 +26,7 @@ export default function BlogPostsPage() {
   const fetchBlogPosts = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/admin/all`, {
         credentials: 'include',
       });
       

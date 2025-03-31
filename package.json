@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev -H 0.0.0.0 --turbopack",
-    "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "dev": "next dev -H 0.0.0.0 --turbopack",
+    "build": "next build"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.16",

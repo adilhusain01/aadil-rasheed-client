@@ -30,9 +30,17 @@ const StatCard = ({
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({
-    blogPosts: 0,
+    blogPosts: {
+      total: 0,
+      published: 0,
+      unpublished: 0
+    },
     galleryImages: 0,
-    socialLinks: 0,
+    socialLinks: {
+      total: 0,
+      active: 0,
+      inactive: 0
+    },
     messages: 0,
     subscribers: 0,
   });
@@ -42,7 +50,7 @@ export default function DashboardPage() {
     const fetchStats = async () => {
       try {
         // Fetch blog posts count
-        const blogRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog`, {
+        const blogRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/admin/all`, {
           credentials: 'include',
         });
         const blogData = await blogRes.json();
@@ -54,7 +62,7 @@ export default function DashboardPage() {
         const galleryData = await galleryRes.json();
         
         // Fetch social media links count
-        const socialRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/social`, {
+        const socialRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/social/admin/all`, {
           credentials: 'include',
         });
         const socialData = await socialRes.json();
@@ -72,9 +80,17 @@ export default function DashboardPage() {
         const subsData = await subsRes.json();
         
         setStats({
-          blogPosts: blogData.count || 0,
+          blogPosts: {
+            total: blogData.count || 0,
+            published: blogData.publishedCount || 0,
+            unpublished: blogData.unpublishedCount || 0
+          },
           galleryImages: galleryData.count || 0,
-          socialLinks: socialData.count || 0,
+          socialLinks: {
+            total: socialData.count || 0,
+            active: socialData.activeCount || 0,
+            inactive: socialData.inactiveCount || 0
+          },
           messages: contactData.count || 0,
           subscribers: subsData.count || 0,
         });
@@ -109,7 +125,7 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                   <StatCard 
                     title="Blog Posts" 
-                    value={stats.blogPosts} 
+                    value={`${stats.blogPosts.published} published / ${stats.blogPosts.unpublished} drafts`} 
                     icon={<FileText size={24} />} 
                     color="bg-blue-500" 
                   />
@@ -121,7 +137,7 @@ export default function DashboardPage() {
                   />
                   <StatCard 
                     title="Social Media Links" 
-                    value={stats.socialLinks} 
+                    value={`${stats.socialLinks.active} active / ${stats.socialLinks.inactive} inactive`} 
                     icon={<Instagram size={24} />} 
                     color="bg-purple-500" 
                   />

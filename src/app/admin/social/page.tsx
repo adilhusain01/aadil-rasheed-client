@@ -33,7 +33,7 @@ export default function SocialMediaPage() {
   const fetchSocialLinks = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/social`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/social/admin/all`, {
         credentials: 'include',
       });
       

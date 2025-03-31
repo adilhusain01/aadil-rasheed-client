@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import { Libre_Baskerville, Nunito_Sans } from "next/font/google";
 import "./globals.css";
 import ClientBody from "./ClientBody";
-import Footer from "@/components/Footer";
-import Header from "@/components/Header";
-import Head from "next/head";
+import ConditionalLayout from "@/components/ConditionalLayout";
 
 const libreBaskerville = Libre_Baskerville({
   variable: "--font-libre-baskerville",
@@ -52,27 +50,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <>
-      <Head>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, shrink-to-fit=no"
-        />
-      </Head>
-      <html
-        lang="en"
-        className={`${libreBaskerville.variable} ${nunitoSans.variable}`}
-      >
-        <ClientBody>
-          <div className="flex flex-col min-h-screen pt-4 md:pt-16">
-            <Header />
-            <main className="flex-1">{children}</main>
-            <div id="contact">
-              <Footer />
-            </div>
-          </div>
-        </ClientBody>
-      </html>
-    </>
+    <html lang="en" className={`${libreBaskerville.variable} ${nunitoSans.variable}`}>
+      <ClientBody>
+        <ConditionalLayout>
+          {children}
+        </ConditionalLayout>
+      </ClientBody>
+    </html>
   );
 }
