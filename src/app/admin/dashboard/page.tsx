@@ -144,7 +144,7 @@ export default function DashboardPage() {
                   />
                 </div>
 
-                <div className="bg-white rounded-lg shadow-md p-6">
+                {/* <div className="bg-white rounded-lg shadow-md p-6">
                   <h2 className="text-xl font-bold mb-4">Recent Activity</h2>
                   <p className="text-gray-600">
                     Welcome to your admin dashboard! From here, you can manage all aspects of your website content.
@@ -170,7 +170,7 @@ export default function DashboardPage() {
                       </p>
                     </div>
                   </div>
-                </div>
+                </div> */}
               </>
             )}
           </main>
