@@ -10,48 +10,20 @@ export type { BlogPost };
 export async function generateStaticParams() {
   try {
     console.log('Generating static params for blog posts');
-    // Include hardcoded slugs for critical blog posts to ensure they're pre-rendered
-    const hardcodedSlugs = [
-      { slug: 'ham-pe-laazim-hai-ki-ham-waqt-ko-zaaya-na-karein' },
-      { slug: 'cgdg' }, // Adding your example slug
-      // A few more examples of potential slugs with different patterns
-      { slug: 'my-blog-post' },
-      { slug: 'special_characters' },
-      { slug: 'with.dots' },
-      { slug: 'numbers123' },
-      // Add any other important slugs that must be pre-rendered
-    ];
     
     // Fetch dynamic slugs from API
     const posts = await fetchBlogPosts();
-    const dynamicSlugs = posts.map((post) => ({
+    const slugs = posts.map((post) => ({
       slug: post.slug,
     }));
     
-    // Combine both sets of slugs, ensuring no duplicates
-    const allSlugs = [...hardcodedSlugs];
-    
-    // Add dynamic slugs that aren't already in the hardcoded list
-    dynamicSlugs.forEach(item => {
-      if (!allSlugs.some(existing => existing.slug === item.slug)) {
-        allSlugs.push(item);
-      }
-    });
-    
-    console.log(`Generated params for ${allSlugs.length} blog posts`);
-    console.log('Slugs being pre-rendered:', allSlugs.map(s => s.slug).join(', '));
-    return allSlugs;
+    console.log(`Generated params for ${slugs.length} blog posts`);
+    console.log('Slugs being pre-rendered:', slugs.map(s => s.slug).join(', '));
+    return slugs;
   } catch (error) {
     console.error('Error generating static params:', error);
-    // Always return at least the hardcoded slugs even if API fails
-    return [
-      { slug: 'ham-pe-laazim-hai-ki-ham-waqt-ko-zaaya-na-karein' },
-      { slug: 'cgdg' }, // Your example slug
-      { slug: 'my-blog-post' },
-      { slug: 'special_characters' },
-      { slug: 'with.dots' },
-      { slug: 'numbers123' },
-    ];
+    // Return empty array - dynamic paths will be generated on demand
+    return [];
   }
 }
 
