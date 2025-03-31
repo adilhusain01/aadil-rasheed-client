@@ -24,6 +24,7 @@ const nextConfig = {
         hostname: '**.vercel.app',
       },
     ],
+    domains: ['imgs.search.brave.com'],
   },
   typescript: {
     // During development we can ignore TypeScript errors
