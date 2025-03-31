@@ -188,6 +188,16 @@ const isBuildTime = () => {
   return isBuild;
 };
 
+// Helper to check if we're in a deployed environment (like Vercel)
+const isDeployedEnvironment = () => {
+  // Check for Vercel environment variables
+  const isVercel = typeof process !== 'undefined' && 
+    (process.env.VERCEL || process.env.VERCEL_ENV || process.env.NEXT_PUBLIC_VERCEL_ENV);
+  
+  console.log(`[API Debug] isDeployedEnvironment(): ${!!isVercel}`);
+  return !!isVercel;
+};
+
 // Empty mock data for build time
 const EMPTY_BLOG_POSTS: BlogPost[] = [];
 const EMPTY_SOCIAL_LINKS: SocialMediaLink[] = [];
@@ -411,9 +421,10 @@ export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost> {
     };
   };
 
-  // During build time or in development environment, return appropriate mock data
-  if (isBuildTime() || process.env.NODE_ENV === 'development') {
-    console.log(`[API Debug] Build time or development environment detected, returning mock data for blog post with slug: ${cleanSlug}`);
+  // Return mock data during build time, in development, or in Vercel environment
+  // This ensures fallback content is available for all environments
+  if (isBuildTime() || process.env.NODE_ENV === 'development' || isDeployedEnvironment()) {
+    console.log(`[API Debug] Special environment detected (build/dev/deployed), using fallback data for blog post with slug: ${cleanSlug}`);
     return getFallbackContent(cleanSlug);
   }
   

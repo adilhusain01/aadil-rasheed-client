@@ -56,16 +56,10 @@ export async function generateStaticParams() {
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
   
-  // Optional: Pre-fetch the post on the server to improve initial load
-  // This doesn't replace client-side fetching but can improve performance
-  try {
-    // Attempt to pre-fetch the post data (but don't block rendering on it)
-    await fetchBlogPostBySlug(slug);
-    console.log(`[Blog Post Page] Pre-fetched data for slug: ${slug}`);
-  } catch (error) {
-    // Just log the error, we'll handle actual rendering in the client component
-    console.error(`[Blog Post Page] Error pre-fetching data for slug: ${slug}`, error);
-  }
+  console.log(`[Blog Post Page] Rendering for slug: ${slug} - generating fallback-friendly response`);
+  
+  // Never throw an error or redirect to notFound() at the server level
+  // This allows all slugs to be handled by the client component, which has better fallback handling
   
   return (
     <Suspense fallback={<div className="mt-[5rem] px-4 flex justify-center items-center min-h-[50vh]">
