@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-// Removed notFound import since we handle errors with our own UI
+import { notFound } from "next/navigation";
 import PageTransition from "@/components/PageTransition";
 import AnimatedSection from "@/components/AnimatedSection";
 import RelatedPosts from "@/components/blog/RelatedPosts";
@@ -39,17 +39,10 @@ export default function BlogPostClient({ slug }: { slug: string }) {
         
         while (!success && retryCount < maxRetries) {
           try {
-            // Add a cache-busting parameter for Vercel edge network
-            const timestamp = new Date().getTime();
-            const fetchedPost = await fetchBlogPostBySlug(`${slug}?t=${timestamp}`);
-            
-            if (fetchedPost && fetchedPost._id) {
-              console.log(`[Blog Post Client] Successfully loaded post: ${fetchedPost.title}`);
-              setPost(fetchedPost);
-              success = true;
-            } else {
-              throw new Error('Received invalid post data');
-            }
+            const fetchedPost = await fetchBlogPostBySlug(slug);
+            console.log(`[Blog Post Client] Successfully loaded post: ${fetchedPost.title}`);
+            setPost(fetchedPost);
+            success = true;
           } catch (fetchError) {
             retryCount++;
             console.warn(`[Blog Post Client] Retry ${retryCount}/${maxRetries} failed:`, fetchError);
