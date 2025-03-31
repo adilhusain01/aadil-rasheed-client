@@ -76,6 +76,8 @@ export interface CommentData {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
+console.log(API_URL);
+
 // Helper to check if we're in build/SSG mode
 const isBuildTime = () => {
   return process.env.NODE_ENV === 'production' && typeof window === 'undefined';
