@@ -171,7 +171,7 @@ export default function BlogPostClient({ slug }: { slug: string }) {
           
           {/* Related Posts */}
           <AnimatedSection>
-            <RelatedPosts currentPostId={post._id} />
+            <RelatedPosts currentPost={post} />
           </AnimatedSection>
 
           <AnimatedSection>
