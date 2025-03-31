@@ -1,20 +1,46 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import PageTransition from "@/components/PageTransition";
 import AnimatedSection from "@/components/AnimatedSection";
 import BlogCard from "@/components/blog/BlogCard";
 import { fetchBlogPosts } from "@/lib/api";
-import { BlogPost } from "./[slug]/page";
 
-async function getBlogPosts(): Promise<BlogPost[]> {
-  try {
-    return await fetchBlogPosts();
-  } catch (error) {
-    console.error('Error fetching blog posts:', error);
-    return [];
-  }
+// Blog Post type
+export interface BlogPost {
+  _id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  image?: string;
+  date: string;
+  likes?: number;
+  isPublished: boolean;
 }
 
-export default async function BlogPage() {
-  const blogPosts = await getBlogPosts();
+export default function BlogPage() {
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadBlogPosts() {
+      try {
+        console.log("[Blog Page] Loading blog posts");
+        setLoading(true);
+        const posts = await fetchBlogPosts();
+        console.log(`[Blog Page] Loaded ${posts.length} blog posts`);
+        setBlogPosts(posts);
+      } catch (error) {
+        console.error('[Blog Page] Error loading blog posts:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadBlogPosts();
+  }, []);
+
   return (
     <PageTransition>
       <section className="mt-[5rem] px-4">
@@ -24,11 +50,21 @@ export default async function BlogPage() {
           </AnimatedSection>
 
           <AnimatedSection delay={0.2}>
-            <div className="grid grid-cols-1 gap-12">
-              {blogPosts.map((post: BlogPost, index: number) => (
-                <BlogCard key={post.slug} post={post} />
-              ))}
-            </div>
+            {loading ? (
+              <div className="py-12 text-center">
+                <p className="text-gray-600">Loading blog posts...</p>
+              </div>
+            ) : blogPosts.length > 0 ? (
+              <div className="grid grid-cols-1 gap-12">
+                {blogPosts.map((post: BlogPost) => (
+                  <BlogCard key={post.slug} post={post} />
+                ))}
+              </div>
+            ) : (
+              <div className="py-12 text-center">
+                <p className="text-gray-600">No blog posts found. Check back soon for new content!</p>
+              </div>
+            )}
           </AnimatedSection>
         </div>
       </section>
