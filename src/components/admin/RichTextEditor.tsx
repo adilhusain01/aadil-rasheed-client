@@ -10,17 +10,30 @@ interface RichTextEditorProps {
   placeholder?: string;
 }
 
+// TinyMCE related types
+type TinyMCEEditor = {
+  getContent: () => string;
+  setContent: (content: string) => void;
+  hasFocus: () => boolean;
+  save: () => void;
+  on: (event: string, callback: () => void) => void;
+};
+
+type TinyMCEEvent = {
+  target: TinyMCEEditor;
+};
+
 interface FilePickerCallbackArgs {
   callback: (url: string, meta?: Record<string, string>) => void;
   value: string;
   meta: {
     filetype: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
 const RichTextEditor = ({ value, onChange, height = 500, placeholder = 'Write your content here...' }: RichTextEditorProps) => {
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<TinyMCEEditor | null>(null);
   const [editorInitialized, setEditorInitialized] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [internalContent, setInternalContent] = useState(value);
@@ -55,7 +68,7 @@ const RichTextEditor = ({ value, onChange, height = 500, placeholder = 'Write yo
     <>
       <Editor
         apiKey="zsw4tabnusu8qdsksj8vjszbka7n6zt3b9uo92dh7si5g90u" // Using no API key to avoid external calls
-        onInit={(evt: any, editor: any) => {
+        onInit={(evt, editor: TinyMCEEditor) => {
           editorRef.current = editor;
           setEditorInitialized(true);
         }}
@@ -121,7 +134,7 @@ const RichTextEditor = ({ value, onChange, height = 500, placeholder = 'Write yo
           },
           send_statistics: false,
           collect_annotations: false,
-          setup: function(editor: any) {
+          setup: function(editor: TinyMCEEditor) {
             editor.on('change', function() {
               editor.save(); // This will trigger the onEditorChange event
             });

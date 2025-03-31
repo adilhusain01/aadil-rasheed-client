@@ -14,7 +14,7 @@ interface ReCaptchaProps {
 }
 
 const ReCaptcha = forwardRef<ReCaptchaHandle, ReCaptchaProps>(
-  ({ onChange, siteKey = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI' }, ref) => {
+  ({ onChange, siteKey = '6LfBnAQrAAAAAPisACwO3t4oncSNJwYefoJJviGs' }, ref) => {
     // Using Google's test key by default (always passes verification)
     // Replace with your actual key in production
     const recaptchaRef = useRef<ReCAPTCHA>(null);

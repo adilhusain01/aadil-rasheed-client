@@ -5,13 +5,82 @@ interface ApiResponse<T> {
   error?: string | string[];
 }
 
+// Blog Post types
+export interface BlogPost {
+  _id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  image?: string;
+  date: string;
+  likes: number;
+  isPublished: boolean;
+  tags?: string[];
+}
+
+// Comment types
+export interface Comment {
+  _id: string;
+  name: string;
+  email: string;
+  content: string;
+  parentId?: string;
+  blogId: string;
+  isApproved: boolean;
+  createdAt: string;
+  replies?: Comment[];
+}
+
+// Contact form type
+export interface ContactFormData {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+// Subscription form type
+export interface SubscriptionData {
+  email: string;
+  name?: string;
+}
+
+// Social media link type
+export interface SocialMediaLink {
+  _id: string;
+  platform: string;
+  url: string;
+  icon: string;
+  displayOrder: number;
+  isActive: boolean;
+}
+
+// Gallery image type
+export interface GalleryImage {
+  _id: string;
+  title: string;
+  description?: string;
+  imageUrl: string;
+  thumbnail?: string;
+  category?: string;
+  displayOrder?: number;
+}
+
+// Comment data type
+export interface CommentData {
+  name: string;
+  email: string;
+  content: string;
+}
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 // Blog Post API
-export async function fetchBlogPosts() {
+export async function fetchBlogPosts(): Promise<BlogPost[]> {
   try {
     const response = await fetch(`${API_URL}/blog`);
-    const data: ApiResponse<any> = await response.json();
+    const data: ApiResponse<BlogPost[]> = await response.json();
     
     if (!data.success) {
       throw new Error(Array.isArray(data.error) ? data.error[0] : data.error);
@@ -24,10 +93,10 @@ export async function fetchBlogPosts() {
   }
 }
 
-export async function fetchBlogPostBySlug(slug: string) {
+export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost> {
   try {
     const response = await fetch(`${API_URL}/blog/${slug}`);
-    const data: ApiResponse<any> = await response.json();
+    const data: ApiResponse<BlogPost> = await response.json();
     
     if (!data.success) {
       throw new Error(Array.isArray(data.error) ? data.error[0] : data.error);
@@ -40,7 +109,7 @@ export async function fetchBlogPostBySlug(slug: string) {
   }
 }
 
-export async function likeBlogPost(id: string) {
+export async function likeBlogPost(id: string): Promise<BlogPost> {
   try {
     const response = await fetch(`${API_URL}/blog/${id}/like`, {
       method: 'PUT',
@@ -49,7 +118,7 @@ export async function likeBlogPost(id: string) {
       }
     });
     
-    const data: ApiResponse<any> = await response.json();
+    const data: ApiResponse<BlogPost> = await response.json();
     
     if (!data.success) {
       throw new Error(Array.isArray(data.error) ? data.error[0] : data.error);
@@ -57,16 +126,16 @@ export async function likeBlogPost(id: string) {
     
     return data.data;
   } catch (error) {
-    console.error('Error liking blog post:', error);
+    console.error(`Error liking blog post with id ${id}:`, error);
     throw error;
   }
 }
 
 // Social Media API
-export async function fetchSocialMediaLinks() {
+export async function fetchSocialMediaLinks(): Promise<SocialMediaLink[]> {
   try {
     const response = await fetch(`${API_URL}/social`);
-    const data: ApiResponse<any> = await response.json();
+    const data: ApiResponse<SocialMediaLink[]> = await response.json();
     
     if (!data.success) {
       throw new Error(Array.isArray(data.error) ? data.error[0] : data.error);
@@ -80,10 +149,10 @@ export async function fetchSocialMediaLinks() {
 }
 
 // Gallery API
-export async function fetchGalleryImages() {
+export async function fetchGalleryImages(): Promise<GalleryImage[]> {
   try {
     const response = await fetch(`${API_URL}/gallery`);
-    const data: ApiResponse<any> = await response.json();
+    const data: ApiResponse<GalleryImage[]> = await response.json();
     
     if (!data.success) {
       throw new Error(Array.isArray(data.error) ? data.error[0] : data.error);
@@ -97,17 +166,20 @@ export async function fetchGalleryImages() {
 }
 
 // Contact Form API
-export async function submitContactForm(formData: any, recaptchaToken: string) {
+export async function submitContactForm(formData: ContactFormData, recaptchaToken: string): Promise<{ message: string }> {
   try {
     const response = await fetch(`${API_URL}/contact`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ ...formData, recaptchaToken })
+      body: JSON.stringify({
+        ...formData,
+        recaptchaToken
+      })
     });
     
-    const data: ApiResponse<any> = await response.json();
+    const data: ApiResponse<{ message: string }> = await response.json();
     
     if (!data.success) {
       throw new Error(Array.isArray(data.error) ? data.error[0] : data.error);
@@ -121,17 +193,20 @@ export async function submitContactForm(formData: any, recaptchaToken: string) {
 }
 
 // Subscription API
-export async function submitSubscription(formData: any, recaptchaToken: string) {
+export async function submitSubscription(formData: SubscriptionData, recaptchaToken: string): Promise<{ message: string }> {
   try {
     const response = await fetch(`${API_URL}/subscription`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ ...formData, recaptchaToken })
+      body: JSON.stringify({
+        ...formData,
+        recaptchaToken
+      })
     });
     
-    const data: ApiResponse<any> = await response.json();
+    const data: ApiResponse<{ message: string }> = await response.json();
     
     if (!data.success) {
       throw new Error(Array.isArray(data.error) ? data.error[0] : data.error);
@@ -145,17 +220,18 @@ export async function submitSubscription(formData: any, recaptchaToken: string) 
 }
 
 // Upload API
-export async function uploadImage(file: File) {
+export async function uploadImage(file: File): Promise<{ imageUrl: string }> {
   try {
     const formData = new FormData();
     formData.append('image', file);
     
     const response = await fetch(`${API_URL}/upload`, {
       method: 'POST',
+      credentials: 'include',
       body: formData
     });
     
-    const data: ApiResponse<any> = await response.json();
+    const data: ApiResponse<{ imageUrl: string }> = await response.json();
     
     if (!data.success) {
       throw new Error(Array.isArray(data.error) ? data.error[0] : data.error);
@@ -169,10 +245,10 @@ export async function uploadImage(file: File) {
 }
 
 // Comment API
-export async function fetchBlogComments(blogId: string) {
+export async function fetchBlogComments(blogId: string): Promise<Comment[]> {
   try {
     const response = await fetch(`${API_URL}/blog/${blogId}/comments`);
-    const data: ApiResponse<any> = await response.json();
+    const data: ApiResponse<Comment[]> = await response.json();
     
     if (!data.success) {
       throw new Error(Array.isArray(data.error) ? data.error[0] : data.error);
@@ -185,17 +261,20 @@ export async function fetchBlogComments(blogId: string) {
   }
 }
 
-export async function submitComment(blogId: string, commentData: any, recaptchaToken: string) {
+export async function submitComment(blogId: string, commentData: CommentData, recaptchaToken: string): Promise<Comment> {
   try {
     const response = await fetch(`${API_URL}/blog/${blogId}/comments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ ...commentData, recaptchaToken })
+      body: JSON.stringify({
+        ...commentData,
+        recaptchaToken
+      })
     });
     
-    const data: ApiResponse<any> = await response.json();
+    const data: ApiResponse<Comment> = await response.json();
     
     if (!data.success) {
       throw new Error(Array.isArray(data.error) ? data.error[0] : data.error);
@@ -208,17 +287,20 @@ export async function submitComment(blogId: string, commentData: any, recaptchaT
   }
 }
 
-export async function submitReply(commentId: string, replyData: any, recaptchaToken: string) {
+export async function submitReply(commentId: string, replyData: CommentData, recaptchaToken: string): Promise<Comment> {
   try {
     const response = await fetch(`${API_URL}/blog/comments/${commentId}/replies`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ ...replyData, recaptchaToken })
+      body: JSON.stringify({
+        ...replyData,
+        recaptchaToken
+      })
     });
     
-    const data: ApiResponse<any> = await response.json();
+    const data: ApiResponse<Comment> = await response.json();
     
     if (!data.success) {
       throw new Error(Array.isArray(data.error) ? data.error[0] : data.error);

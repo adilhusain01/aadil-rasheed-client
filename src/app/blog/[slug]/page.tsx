@@ -10,18 +10,7 @@ import AnimatedSection from "@/components/AnimatedSection";
 import RelatedPosts from "@/components/blog/RelatedPosts";
 import CommentSection from "@/components/blog/CommentSection";
 import { fetchBlogPosts, fetchBlogPostBySlug, likeBlogPost } from "@/lib/api";
-
-export interface BlogPost {
-  _id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  image: string;
-  date: string;
-  likes: number;
-  content: string;
-  comments?: any[];
-}
+import type { BlogPost } from "@/lib/api"; // Import the type instead of redefining
 
 export default function BlogPostPage() {
   // Use useParams hook instead of props to get params
@@ -140,7 +129,7 @@ export default function BlogPostPage() {
 
                 <div className="relative w-full h-[400px] mb-8">
                   <Image
-                    src={post.image}
+                    src={post.image || '/placeholder.jpg'}
                     alt={post.title}
                     fill
                     className="object-cover"
@@ -201,7 +190,7 @@ export default function BlogPostPage() {
                         ></path>
                       </svg>
                       <span className="text-sm text-muted-foreground">
-                        {post.comments?.length || 0}
+                        {(post as any).comments?.length || 0}
                       </span>
                     </div>
                   </div>

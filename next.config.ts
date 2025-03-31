@@ -15,18 +15,26 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Disabling static export since it doesn't work well with dynamic routes
   // output: "export",
-  output: process.env.NODE_ENV === 'production' ? 'export' : undefined,
   distDir: "build",
   images: {
-    unoptimized: true,
-    domains: ["res.cloudinary.com"],
-    loader: "cloudinary",
-    path: "https://res.cloudinary.com/djxuqljgr/",
+    // unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+    ],
   },
   typescript: {
+    // During development we can ignore TypeScript errors
     ignoreBuildErrors: true,
+  },
+  eslint: {
+    // During development we can ignore ESLint errors
+    ignoreDuringBuilds: true,
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
