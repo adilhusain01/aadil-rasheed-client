@@ -1,21 +1,6 @@
-// /** @type {import('next').NextConfig} */
-// const nextConfig = {
-//   output: "export",
-//   distDir: "build",
-//   images: {
-//     unoptimized: true,
-//     domains: ["res.cloudinary.com"],
-//   },
-//   typescript: {
-//     ignoreBuildErrors: true,
-//   },
-// };
-
-// module.exports = nextConfig;
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Disabling static export since it doesn't work well with dynamic routes
+  // Comment out static export for Vercel deployment 
   // output: "export",
   distDir: "build",
   images: {
@@ -24,6 +9,14 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.vercel.app',
       },
     ],
   },
