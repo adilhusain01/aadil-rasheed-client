@@ -126,89 +126,121 @@ export default function BlogPostClient({ slug }: { slug: string }) {
   return (
     <PageTransition>
       <section className="mt-[5rem] px-4">
-        <div className="container mx-auto">
+        <div className="w-full max-w-5xl mx-auto py-4">
           {/* Back Link */}
-          <div className="mb-6">
-            <Link href="/blog" className="text-blue-500 hover:text-blue-700 flex items-center group">
-              <span className="transform transition-transform group-hover:-translate-x-1">←</span> 
-              <span className="ml-2">Back to all posts</span>
-            </Link>
-          </div>
+          <Link href="/blog" className="hover:text-primary transition-colors flex items-center gap-1 mb-8">
+            <span className="transform transition-transform group-hover:-translate-x-1">←</span> 
+            <span>All posts</span>
+          </Link>
+        </div>
+        
+        <div className="w-full max-w-5xl mx-auto px-4 py-12 border-[1px] rounded-lg">
+          <article className="w-full max-w-3xl mx-auto">
           
-          {/* Title Section */}
-          <AnimatedSection className="mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">{post.title}</h1>
-            <div className="flex items-center text-gray-600 mb-8">
-              <span className="mr-4">{new Date(post.date).toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-              })}</span>
-              <span className="flex items-center">
-                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10 15.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5-1.5.67-1.5 1.5.67 1.5 1.5 1.5zm0-12c-4.42 0-8 3.58-8 8 0 4.42 3.58 8 8 8 4.42 0 8-3.58 8-8 0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-3.31 2.69-6 6-6 3.31 0 6 2.69 6 6 0 3.31-2.69 6-6 6z"/>
-                </svg>
-                {post.likes} {post.likes === 1 ? 'like' : 'likes'}
-                <button 
-                  onClick={handleLike}
-                  disabled={hasLiked || liking}
-                  className={`ml-2 p-1 rounded-full focus:outline-none transition-colors ${
-                    hasLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
-                  }`}
-                  title={hasLiked ? 'You already liked this post' : 'Like this post'}
-                >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                  </svg>
-                </button>
-              </span>
-            </div>
-          </AnimatedSection>
-          
-          {/* Featured Image */}
-          {post.image && (
-            <AnimatedSection className="mb-8">
-              <div className="relative w-full h-[300px] md:h-[400px] lg:h-[500px] rounded-lg overflow-hidden">
-                <Image 
-                  src={post.image} 
-                  alt={post.title}
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              </div>
-            </AnimatedSection>
-          )}
-          
-          {/* Tags */}
-          {post.tags && post.tags.length > 0 && (
-            <AnimatedSection className="mb-8">
-              <div className="flex flex-wrap gap-2">
-                {post.tags.map((tag, index) => (
-                  <span 
-                    key={index} 
-                    className="px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-700"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </AnimatedSection>
-          )}
-          
-          {/* Content */}
-          <AnimatedSection className="prose prose-lg max-w-none mb-12">
-            <div dangerouslySetInnerHTML={{ __html: post.content }} />
-          </AnimatedSection>
-          
-          {/* Related Posts */}
-          <AnimatedSection>
-            <RelatedPosts currentPost={post} />
-          </AnimatedSection>
+            {/* Title Section */}
+            <AnimatedSection>
+              <header className="mb-10">
+                <div className="flex items-center justify-start space-x-3 mb-8">
+                  <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs">
+                    A
+                  </div>
+                  <div className="flex flex-row items-center justify-start gap-2">
+                    <span className="text-sm font-medium">Admin</span>
+                    <div className="text-xs text-muted-foreground space-x-1">
+                      <span>•</span>
+                      <span>{new Date(post.date).toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                      })}</span>
+                    </div>
+                  </div>
+                </div>
 
-          <AnimatedSection>
-            <CommentSection blogId={post._id} />
-          </AnimatedSection>
+                <div className="mb-8">
+                  <h1 className="text-3xl md:text-4xl font-serif font-bold mb-8">{post.title}</h1>
+                  {post.excerpt && <p className="font-semibold">{post.excerpt}</p>}
+                </div>
+          
+                {/* Featured Image */}
+                {post.image && (
+                  <div className="relative w-full h-[400px] mb-8 rounded-lg overflow-hidden">
+                    <Image 
+                      src={post.image} 
+                      alt={post.title}
+                      fill
+                      className="object-cover"
+                      priority
+                    />
+                  </div>
+                )}
+          
+                {/* Tags */}
+                {post.tags && post.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-8">
+                    {post.tags.map((tag, index) => (
+                      <span 
+                        key={index} 
+                        className="px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-700"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </header>
+            </AnimatedSection>
+          
+            {/* Content */}
+            <AnimatedSection delay={0.2}>
+              <div className="prose prose-stone max-w-none mb-10 space-y-5">
+                <div dangerouslySetInnerHTML={{ __html: post.content }} />
+              </div>
+            </AnimatedSection>
+            
+            {/* Actions */}
+            <AnimatedSection delay={0.3}>
+              <div className="border-t border-gray-200 pt-6 mt-10">
+                <div className="flex justify-between items-center">
+                  <div className="text-sm text-muted-foreground">
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <button 
+                      onClick={handleLike}
+                      disabled={hasLiked || liking}
+                      className="flex items-center space-x-1"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill={hasLiked ? "currentColor" : "none"}
+                        className={`w-5 h-5 ${hasLiked ? 'text-red-500' : 'text-muted-foreground'}`}
+                      >
+                        <path
+                          d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        ></path>
+                      </svg>
+                      <span className="text-sm text-muted-foreground">
+                        {post.likes}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </AnimatedSection>
+            
+            {/* Related Posts */}
+            <AnimatedSection delay={0.4}>
+              <RelatedPosts currentPost={post} />
+            </AnimatedSection>
+
+            <AnimatedSection delay={0.5}>
+              <CommentSection blogId={post._id} />
+            </AnimatedSection>
+          </article>
         </div>
       </section>
     </PageTransition>

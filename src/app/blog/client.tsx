@@ -30,17 +30,18 @@ export default function BlogPageClient() {
   return (
     <PageTransition>
       <section className="mt-[5rem] px-4">
-        <div className="container mx-auto">
+        <div className="w-full max-w-5xl mx-auto">
           <AnimatedSection>
-            <h1 className="text-4xl font-bold mb-8">Blog</h1>
+            <h1 className="text-4xl md:text-5xl font-serif mb-12">Blog Posts</h1>
           </AnimatedSection>
 
-          <AnimatedSection>
-            <div className="my-8">
+          <AnimatedSection delay={0.2}>
             {loading ? (
-              <div className="animate-pulse">Loading blog posts...</div>
+              <div className="py-8 animate-pulse flex justify-center items-center min-h-[200px]">
+                <p className="text-lg text-gray-500">Loading blog posts...</p>
+              </div>
             ) : blogPosts.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 gap-12">
                 {blogPosts.map((post: BlogPost) => (
                   <BlogCard 
                     key={post._id} 
@@ -49,11 +50,10 @@ export default function BlogPageClient() {
                 ))}
               </div>
             ) : (
-              <AnimatedSection className="text-center py-16">
+              <div className="text-center py-16">
                 <h3 className="text-xl text-gray-600">No blog posts available at the moment.</h3>
-              </AnimatedSection>
+              </div>
             )}
-            </div>
           </AnimatedSection>
         </div>
       </section>
