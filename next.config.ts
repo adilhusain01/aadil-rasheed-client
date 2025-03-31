@@ -1,10 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Comment out static export for Vercel deployment 
+  // Do not use output: "export" for Vercel deployments
   // output: "export",
-  distDir: "build",
+  
+  // Remove custom dist directory for Vercel compatibility
+  // distDir: "next",
+  
   images: {
-    // unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
