@@ -57,8 +57,14 @@ export async function generateStaticParams() {
 
 // Set revalidation interval
 export const revalidate = 3600; // Revalidate pages every hour
-// Enable dynamic rendering for slugs not in generateStaticParams
+
+// CRITICAL: Enable dynamic rendering for slugs not in generateStaticParams
+// This ensures that non-hardcoded slugs will still be rendered on-demand
 export const dynamicParams = true;
+
+// This ensures fallback behavior works correctly on Vercel
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
 
 // This is the main page component wrapper
 export default function BlogPostPage({ params }: { params: { slug: string } }) {

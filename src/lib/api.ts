@@ -314,12 +314,22 @@ export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost> {
     // For a production environment, consider providing fallback content rather than throwing
     if (process.env.NODE_ENV === 'production') {
       console.log('[API Debug] Production environment detected, returning fallback content');
+      
+      // Format the title nicely from the slug
+      const formattedTitle = slug
+        .replace(/-/g, ' ')
+        .replace(/\./g, ' ')
+        .replace(/_/g, ' ')
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+      
       return {
         _id: `fallback-${slug}`,
-        title: `${slug.replace(/-/g, ' ')}`,
+        title: formattedTitle,
         slug: slug,
         excerpt: 'Content temporarily unavailable',
-        content: '<p>We apologize, but this content is temporarily unavailable. Please check back later.</p>',
+        content: '<p>This blog post is available on request. Please check back later.</p>',
         date: new Date().toISOString(),
         likes: 0,
         isPublished: true,

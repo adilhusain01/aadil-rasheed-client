@@ -6,6 +6,9 @@ const nextConfig = {
   // Remove custom dist directory for Vercel compatibility
   // distDir: "next",
   
+  // Ensure all paths are properly handled (including dynamic ones)
+  trailingSlash: false,
+  
   images: {
     remotePatterns: [
       {
