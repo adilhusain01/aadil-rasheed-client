@@ -4,6 +4,7 @@ import { useState, useEffect, FormEvent } from "react";
 import ProtectedRoute from "@/components/admin/ProtectedRoute";
 import Sidebar from "@/components/admin/Sidebar";
 import { Plus, Edit, Trash2, X, Save } from "lucide-react";
+import { fetchWithAuth } from "@/lib/api";
 
 interface GalleryImage {
   _id: string;
@@ -35,15 +36,7 @@ export default function GalleryPage() {
   const fetchGalleryImages = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/gallery`, {
-        credentials: 'include',
-      });
-      
-      if (!res.ok) {
-        throw new Error('Failed to fetch gallery images');
-      }
-      
-      const data = await res.json();
+      const data = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/gallery`);
       setGalleryImages(data.data);
     } catch (error) {
       console.error('Error fetching gallery images:', error);
@@ -112,33 +105,23 @@ export default function GalleryPage() {
     setSubmitting(true);
 
     try {
-      let url = `${process.env.NEXT_PUBLIC_API_URL}/gallery`;
-      let method = 'POST';
+      const url = isEditing 
+        ? `${process.env.NEXT_PUBLIC_API_URL}/gallery/${selectedImage?._id}` 
+        : `${process.env.NEXT_PUBLIC_API_URL}/gallery`;
       
-      if (isEditing && selectedImage) {
-        url = `${url}/${selectedImage._id}`;
-        method = 'PUT';
-      }
-
-      const res = await fetch(url, {
+      const method = isEditing ? 'PUT' : 'POST';
+      
+      const response = await fetchWithAuth(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-        credentials: 'include',
+        body: JSON.stringify(formData)
       });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || `Failed to ${isEditing ? 'update' : 'create'} gallery image`);
-      }
-
-      handleCloseModal();
+      
+      // Close modal and refresh list
+      setIsModalOpen(false);
       fetchGalleryImages();
     } catch (error) {
-      console.error(`Error ${isEditing ? 'updating' : 'creating'} gallery image:`, error);
-      setError(error instanceof Error ? error.message : `Failed to ${isEditing ? 'update' : 'create'} gallery image`);
+      console.error('Error saving gallery image:', error);
+      setError('Failed to save gallery image. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -150,17 +133,12 @@ export default function GalleryPage() {
         setIsDeleting(true);
         setDeleteId(id);
         
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/gallery/${id}`, {
-          method: 'DELETE',
-          credentials: 'include',
+        await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/gallery/${id}`, {
+          method: 'DELETE'
         });
         
-        if (!res.ok) {
-          throw new Error('Failed to delete gallery image');
-        }
-        
-        // Refresh the gallery images list
-        await fetchGalleryImages();
+        // Refresh the gallery list
+        fetchGalleryImages();
       } catch (error) {
         console.error('Error deleting gallery image:', error);
         setError('Failed to delete gallery image. Please try again.');

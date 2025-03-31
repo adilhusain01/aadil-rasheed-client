@@ -7,6 +7,7 @@ import ProtectedRoute from "@/components/admin/ProtectedRoute";
 import Sidebar from "@/components/admin/Sidebar";
 import { Plus, Edit, Trash2, Eye, Calendar, CheckCircle, XCircle } from "lucide-react";
 import { BlogPost } from "@/types";
+import { fetchWithAuth } from "@/lib/api";
 
 export default function BlogPostsPage() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
@@ -26,15 +27,7 @@ export default function BlogPostsPage() {
   const fetchBlogPosts = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/admin/all`, {
-        credentials: 'include',
-      });
-      
-      if (!res.ok) {
-        throw new Error('Failed to fetch blog posts');
-      }
-      
-      const data: BlogPostsResponse = await res.json();
+      const data = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/blog/admin/all`) as BlogPostsResponse;
       setBlogPosts(data.data);
     } catch (error) {
       console.error('Error fetching blog posts:', error);
@@ -54,14 +47,9 @@ export default function BlogPostsPage() {
         setIsDeleting(true);
         setDeleteId(id);
         
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/id/${id}`, {
-          method: 'DELETE',
-          credentials: 'include',
+        const response = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/blog/${id}`, {
+          method: 'DELETE'
         });
-        
-        if (!res.ok) {
-          throw new Error('Failed to delete blog post');
-        }
         
         // Refresh the blog posts list
         await fetchBlogPosts();

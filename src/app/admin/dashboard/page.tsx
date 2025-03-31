@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import ProtectedRoute from "@/components/admin/ProtectedRoute";
 import Sidebar from "@/components/admin/Sidebar";
-import { FileText, Image, Instagram, Mail, Users } from "lucide-react";
+import { FileText, Image, AtSign, MessageSquare, Users, MailOpen } from "lucide-react";
+import { fetchWithAuth } from "@/lib/api";
 
 // Card component for dashboard stats
-const StatCard = ({ 
+function StatCard({ 
   title, 
   value, 
   icon, 
@@ -16,17 +17,19 @@ const StatCard = ({
   value: number | string; 
   icon: React.ReactNode; 
   color?: string; 
-}) => (
-  <div className="bg-white rounded-lg shadow-md p-6 flex items-center">
-    <div className={`${color} p-3 rounded-full mr-4 text-white`}>
-      {icon}
+}) {
+  return (
+    <div className="bg-white rounded-lg shadow-md p-6 flex items-center">
+      <div className={`${color} p-3 rounded-full mr-4 text-white`}>
+        {icon}
+      </div>
+      <div>
+        <h3 className="text-gray-500 text-sm font-medium">{title}</h3>
+        <p className="text-2xl font-bold">{value}</p>
+      </div>
     </div>
-    <div>
-      <h3 className="text-gray-500 text-sm font-medium">{title}</h3>
-      <p className="text-2xl font-bold">{value}</p>
-    </div>
-  </div>
-);
+  );
+};
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({
@@ -46,62 +49,48 @@ export default function DashboardPage() {
   });
   const [loading, setLoading] = useState(true);
 
+  const fetchDashboardStats = async () => {
+    setLoading(true);
+    try {
+      // Fetch blog posts count
+      const blogData = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/blog/admin/all`);
+      
+      // Fetch gallery images count
+      const galleryData = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/gallery`);
+      
+      // Fetch social media links count
+      const socialData = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/social/admin/all`);
+      
+      // Fetch contact messages count
+      const contactData = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/contact`);
+      
+      // Fetch subscribers count
+      const subsData = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/subscription`);
+      
+      setStats({
+        blogPosts: {
+          total: blogData.count || 0,
+          published: blogData.publishedCount || 0,
+          unpublished: blogData.unpublishedCount || 0
+        },
+        galleryImages: galleryData.count || 0,
+        socialLinks: {
+          total: socialData.count || 0,
+          active: socialData.activeCount || 0,
+          inactive: socialData.inactiveCount || 0
+        },
+        messages: contactData.count || 0,
+        subscribers: subsData.count || 0,
+      });
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        // Fetch blog posts count
-        const blogRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blog/admin/all`, {
-          credentials: 'include',
-        });
-        const blogData = await blogRes.json();
-        
-        // Fetch gallery images count
-        const galleryRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/gallery`, {
-          credentials: 'include',
-        });
-        const galleryData = await galleryRes.json();
-        
-        // Fetch social media links count
-        const socialRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/social/admin/all`, {
-          credentials: 'include',
-        });
-        const socialData = await socialRes.json();
-        
-        // Fetch contact messages count
-        const contactRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contact`, {
-          credentials: 'include',
-        });
-        const contactData = await contactRes.json();
-        
-        // Fetch subscribers count
-        const subsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subscription`, {
-          credentials: 'include',
-        });
-        const subsData = await subsRes.json();
-        
-        setStats({
-          blogPosts: {
-            total: blogData.count || 0,
-            published: blogData.publishedCount || 0,
-            unpublished: blogData.unpublishedCount || 0
-          },
-          galleryImages: galleryData.count || 0,
-          socialLinks: {
-            total: socialData.count || 0,
-            active: socialData.activeCount || 0,
-            inactive: socialData.inactiveCount || 0
-          },
-          messages: contactData.count || 0,
-          subscribers: subsData.count || 0,
-        });
-      } catch (error) {
-        console.error('Error fetching dashboard stats:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchStats();
+    fetchDashboardStats();
   }, []);
 
   return (
@@ -138,13 +127,13 @@ export default function DashboardPage() {
                   <StatCard 
                     title="Social Media Links" 
                     value={`${stats.socialLinks.active} active / ${stats.socialLinks.inactive} inactive`} 
-                    icon={<Instagram size={24} />} 
+                    icon={<AtSign size={24} />} 
                     color="bg-purple-500" 
                   />
                   <StatCard 
                     title="Messages" 
                     value={stats.messages} 
-                    icon={<Mail size={24} />} 
+                    icon={<MailOpen size={24} />} 
                     color="bg-yellow-500" 
                   />
                   <StatCard 

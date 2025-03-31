@@ -125,6 +125,47 @@ const safeFetch = async (url: string, options: RequestInit = {}) => {
   }
 };
 
+// A utility function to make authenticated API requests
+export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
+  // Get token from localStorage if available
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  
+  // Set up headers with auth token if available
+  const headers = new Headers(options.headers || {});
+  headers.set('Content-Type', 'application/json');
+  
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+  
+  // Setup request options
+  const requestOptions: RequestInit = {
+    ...options,
+    headers,
+    credentials: 'include' // Always include credentials for cookies
+  };
+  
+  console.log(`[Admin API] Requesting ${url} with auth`, { 
+    method: requestOptions.method || 'GET',
+    hasToken: !!token
+  });
+  
+  try {
+    const response = await fetch(url, requestOptions);
+    
+    console.log(`[Admin API] Response status:`, response.status);
+    
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error(`[Admin API] Error fetching ${url}:`, error);
+    throw error;
+  }
+};
+
 // Helper to check if we're in build/SSG mode
 const isBuildTime = () => {
   const isBuild = process.env.NODE_ENV === 'production' && typeof window === 'undefined';
