@@ -512,9 +512,3 @@ export async function submitReply(commentId: string, replyData: CommentData, rec
     throw error;
   }
 }
-    return data.data;
-  } catch (error) {
-    console.error('[API Debug] Error submitting reply:', error);
-    throw error;
-  }
-}
