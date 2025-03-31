@@ -1,128 +1,76 @@
 import { Suspense } from 'react';
 import BlogPostClient from './client';
-import { fetchBlogPosts, type BlogPost } from "@/lib/api";
-import { notFound } from 'next/navigation';
-
-export const revalidate = 3600; // Revalidate pages every hour
-
-// IMPORTANT: Enable dynamic parameters to handle slugs not in generateStaticParams
-export const dynamicParams = true;
+import { fetchBlogPosts, fetchBlogPostBySlug, type BlogPost } from "@/lib/api";
 
 // Export the BlogPost type for components that need it
 export type { BlogPost };
 
-// Generate static paths for all blog posts at build time
-// export async function generateStaticParams() {
-//   try {
-//     console.log('Generating static params for blog posts');
-//     // Include hardcoded slugs for critical blog posts to ensure they're pre-rendered
-//     const hardcodedSlugs = [
-//       { slug: 'ham-pe-laazim-hai-ki-ham-waqt-ko-zaaya-na-karein' },
-//       { slug: 'cgdg' }, // Adding your example slug
-//       // A few more examples of potential slugs with different patterns
-//       { slug: 'my-blog-post' },
-//       { slug: 'special_characters' },
-//       { slug: 'with.dots' },
-//       { slug: 'numbers123' },
-//       // Add any other important slugs that must be pre-rendered
-//     ];
-    
-//     // Fetch dynamic slugs from API
-//     const posts = await fetchBlogPosts();
-//     const dynamicSlugs = posts.map((post) => ({
-//       slug: post.slug,
-//     }));
-    
-//     // Combine both sets of slugs, ensuring no duplicates
-//     const allSlugs = [...hardcodedSlugs];
-    
-//     // Add dynamic slugs that aren't already in the hardcoded list
-//     dynamicSlugs.forEach(item => {
-//       if (!allSlugs.some(existing => existing.slug === item.slug)) {
-//         allSlugs.push(item);
-//       }
-//     });
-    
-//     console.log(`Generated params for ${allSlugs.length} blog posts`);
-//     console.log('Slugs being pre-rendered:', allSlugs.map(s => s.slug).join(', '));
-//     return allSlugs;
-//   } catch (error) {
-//     console.error('Error generating static params:', error);
-//     // Always return at least the hardcoded slugs even if API fails
-//     return [
-//       { slug: 'ham-pe-laazim-hai-ki-ham-waqt-ko-zaaya-na-karein' },
-//       { slug: 'cgdg' }, // Your example slug
-//       { slug: 'my-blog-post' },
-//       { slug: 'special_characters' },
-//       { slug: 'with.dots' },
-//       { slug: 'numbers123' },
-//     ];
-//   }
-// }
+// Important: These settings configure how Next.js handles this dynamic route
+export const dynamicParams = true; // Allow slugs not listed in generateStaticParams
+export const revalidate = 3600; // Revalidate at most once per hour
+export const fetchCache = 'force-no-store'; // Don't cache fetch requests
+export const runtime = 'nodejs'; // Use Node.js runtime
 
+// This function tells Next.js which routes to pre-generate at build time
 export async function generateStaticParams() {
   try {
-    console.log('Generating static params for blog posts');
+    console.log('[Blog Post Page] Generating static params for blog posts');
     
-    // Include hardcoded slugs for critical blog posts
+    // Always include important hardcoded slugs
     const hardcodedSlugs = [
       { slug: 'ham-pe-laazim-hai-ki-ham-waqt-ko-zaaya-na-karein' },
-      // Add any other important slugs
+      // Add more critical slugs here
     ];
     
-    // Fetch any additional dynamic slugs from API
+    // Try to fetch dynamic slugs from API
     let dynamicSlugs: { slug: string }[] = [];
     try {
       const posts = await fetchBlogPosts();
       dynamicSlugs = posts.map((post) => ({
         slug: post.slug,
       }));
+      console.log(`[Blog Post Page] Successfully fetched ${dynamicSlugs.length} dynamic slugs`);
     } catch (error) {
-      console.error('Error fetching dynamic slugs:', error);
-      // Continue with hardcoded slugs if API fails
+      console.error('[Blog Post Page] Error fetching dynamic slugs:', error);
     }
     
-    // Combine both sets of slugs, ensuring no duplicates
+    // Combine hardcoded and dynamic slugs (avoiding duplicates)
     const allSlugs = [...hardcodedSlugs];
-    
-    // Add dynamic slugs that aren't already in the hardcoded list
     dynamicSlugs.forEach(item => {
       if (!allSlugs.some(existing => existing.slug === item.slug)) {
         allSlugs.push(item);
       }
     });
     
-    console.log(`Generated params for ${allSlugs.length} blog posts`);
+    console.log(`[Blog Post Page] Generated params for ${allSlugs.length} blog posts`);
     return allSlugs;
   } catch (error) {
-    console.error('Error generating static params:', error);
-    // Return at least the hardcoded slugs if anything fails
+    console.error('[Blog Post Page] Error in generateStaticParams:', error);
     return [
       { slug: 'ham-pe-laazim-hai-ki-ham-waqt-ko-zaaya-na-karein' },
     ];
   }
 }
 
-// Set revalidation interval
-// export const revalidate = 3600; // Revalidate pages every hour
-
-// CRITICAL: Enable dynamic rendering for slugs not in generateStaticParams
-// This ensures that non-hardcoded slugs will still be rendered on-demand
-// export const dynamicParams = true;
-
-// This ensures fallback behavior works correctly on Vercel
-export const fetchCache = 'force-no-store';
-export const runtime = 'nodejs';
-
-// This is the main page component wrapper
+// The server component for blog post pages
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
   
-  // No need for server-side validation or notFound() here
-  // Let the client component handle the display with fallback content
+  // Optional: Pre-fetch the post on the server to improve initial load
+  // This doesn't replace client-side fetching but can improve performance
+  try {
+    // Attempt to pre-fetch the post data (but don't block rendering on it)
+    await fetchBlogPostBySlug(slug);
+    console.log(`[Blog Post Page] Pre-fetched data for slug: ${slug}`);
+  } catch (error) {
+    // Just log the error, we'll handle actual rendering in the client component
+    console.error(`[Blog Post Page] Error pre-fetching data for slug: ${slug}`, error);
+  }
   
   return (
-    <Suspense fallback={<div className="mt-[5rem] px-4 flex justify-center items-center min-h-[50vh]">Loading...</div>}>
+    <Suspense fallback={<div className="mt-[5rem] px-4 flex justify-center items-center min-h-[50vh]">
+      <div className="animate-pulse">Loading post...</div>
+    </div>}>
       <BlogPostClient slug={slug} />
     </Suspense>
   );

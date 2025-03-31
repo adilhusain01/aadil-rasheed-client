@@ -361,14 +361,18 @@ export async function fetchBlogPosts(): Promise<BlogPost[]> {
 // }
 
 export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost> {
-  // Ensure slug is properly encoded
-  const encodedSlug = encodeURIComponent(slug);
+  // Strip any query parameters from the slug before encoding
+  const cleanSlug = slug.split('?')[0];
+  const encodedSlug = encodeURIComponent(cleanSlug);
   console.log(`[API Debug] fetchBlogPostBySlug() - Starting request to ${API_URL}/blog/${encodedSlug}`);
   
   // Prepare fallback content based on slug
   const getFallbackContent = (slugValue: string) => {
+    // Clean the slug before formatting
+    const cleanValue = slugValue.split('?')[0];
+    
     // Format the title nicely from the slug
-    const formattedTitle = slugValue
+    const formattedTitle = cleanValue
       .replace(/-/g, ' ')
       .replace(/\./g, ' ')
       .replace(/_/g, ' ')
@@ -377,7 +381,8 @@ export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost> {
       .join(' ');
     
     // Special case for the Urdu post
-    if (slugValue === 'ham-pe-laazim-hai-ki-ham-waqt-ko-zaaya-na-karein') {
+    if (cleanValue === 'ham-pe-laazim-hai-ki-ham-waqt-ko-zaaya-na-karein') {
+      console.log('[API Debug] Returning hardcoded Urdu post fallback');
       return {
         _id: 'mock-urdu-post-id',
         title: 'ہم پے لازم ہے کہ ہم وقت کو ضایع نہ کریں',
@@ -392,10 +397,11 @@ export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost> {
     }
     
     // Generic fallback for any other slug
+    console.log(`[API Debug] Returning generic fallback for slug: ${cleanValue}`);
     return {
-      _id: `fallback-${slugValue}`,
+      _id: `fallback-${cleanValue}`,
       title: formattedTitle,
-      slug: slugValue,
+      slug: cleanValue,
       excerpt: 'Content temporarily unavailable',
       content: '<p>This blog post content will be loaded from the server.</p>',
       date: new Date().toISOString(),
@@ -407,8 +413,8 @@ export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost> {
 
   // During build time or in development environment, return appropriate mock data
   if (isBuildTime() || process.env.NODE_ENV === 'development') {
-    console.log(`[API Debug] Build time or development environment detected, returning mock data for blog post with slug: ${slug}`);
-    return getFallbackContent(slug);
+    console.log(`[API Debug] Build time or development environment detected, returning mock data for blog post with slug: ${cleanSlug}`);
+    return getFallbackContent(cleanSlug);
   }
   
   try {
@@ -424,6 +430,7 @@ export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost> {
         
         // Validate response
         if (!data) {
+          console.error('[API Debug] Empty response received');
           throw new Error('Empty response received');
         }
         
@@ -438,6 +445,7 @@ export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost> {
           throw new Error('Invalid response structure');
         }
         
+        console.log(`[API Debug] Successfully fetched blog post: ${data.data.title}`);
         return data.data;
       } catch (error) {
         lastError = error;
@@ -452,12 +460,12 @@ export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost> {
     }
     
     // All attempts failed - return fallback rather than throwing
-    console.error(`[API Debug] All ${maxAttempts} attempts failed for slug ${slug}`);
-    return getFallbackContent(slug);
+    console.error(`[API Debug] All ${maxAttempts} attempts failed for slug ${cleanSlug}`);
+    return getFallbackContent(cleanSlug);
   } catch (error) {
-    console.error(`[API Debug] Error fetching blog post with slug ${slug}:`, error);
+    console.error(`[API Debug] Error fetching blog post with slug ${cleanSlug}:`, error);
     // Always provide fallback content instead of throwing errors
-    return getFallbackContent(slug);
+    return getFallbackContent(cleanSlug);
   }
 }
 

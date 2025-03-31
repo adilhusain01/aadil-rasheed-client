@@ -1,140 +1,9 @@
-// "use client";
-
-// import { useState, useEffect } from "react";
-// import Image from "next/image";
-// import Link from "next/link";
-// import { notFound } from "next/navigation";
-// import PageTransition from "@/components/PageTransition";
-// import AnimatedSection from "@/components/AnimatedSection";
-// import RelatedPosts from "@/components/blog/RelatedPosts";
-// import CommentSection from "@/components/blog/CommentSection";
-// import { fetchBlogPostBySlug, likeBlogPost } from "@/lib/api";
-// import type { BlogPost } from "@/lib/api";
-
-// export default function BlogPostClient({ slug }: { slug: string }) {
-//   const [post, setPost] = useState<BlogPost | null>(null);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState<string | null>(null);
-//   const [liking, setLiking] = useState(false);
-//   const [hasLiked, setHasLiked] = useState(false);
-
-//   useEffect(() => {
-//     // Check if user has already liked this post
-//     const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
-//     if (post && likedPosts.includes(post._id)) {
-//       setHasLiked(true);
-//     }
-//   }, [post]);
-
-//   useEffect(() => {
-//     async function loadPost() {
-//       try {
-//         setLoading(true);
-//         console.log(`[Blog Post Client] Loading post with slug: ${slug}`);
-        
-//         // Implement retry logic for client-side fetching
-//         const maxRetries = 3;
-//         let retryCount = 0;
-//         let success = false;
-        
-//         while (!success && retryCount < maxRetries) {
-//           try {
-//             const fetchedPost = await fetchBlogPostBySlug(slug);
-//             console.log(`[Blog Post Client] Successfully loaded post: ${fetchedPost.title}`);
-//             setPost(fetchedPost);
-//             success = true;
-//           } catch (fetchError) {
-//             retryCount++;
-//             console.warn(`[Blog Post Client] Retry ${retryCount}/${maxRetries} failed:`, fetchError);
-            
-//             if (retryCount < maxRetries) {
-//               // Wait before retrying with exponential backoff
-//               await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 500));
-//             } else {
-//               throw fetchError; // Re-throw if all retries failed
-//             }
-//           }
-//         }
-//       } catch (err) {
-//         console.error(`[Blog Post Client] Error fetching blog post with slug ${slug}:`, err);
-//         setError('Failed to load blog post. Please try refreshing the page.');
-//       } finally {
-//         setLoading(false);
-//       }
-//     }
-    
-//     if (slug) {
-//       loadPost();
-//     }
-//   }, [slug]);
-
-//   const handleLike = async () => {
-//     if (!post || liking || hasLiked) return;
-    
-//     try {
-//       setLiking(true);
-//       const updatedPost = await likeBlogPost(post._id);
-      
-//       // Update post with new like count
-//       setPost({
-//         ...post,
-//         likes: updatedPost.likes
-//       });
-      
-//       // Save liked state to localStorage
-//       const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
-//       likedPosts.push(post._id);
-//       localStorage.setItem('likedPosts', JSON.stringify(likedPosts));
-      
-//       setHasLiked(true);
-//     } catch (err) {
-//       console.error('Error liking post:', err);
-//     } finally {
-//       setLiking(false);
-//     }
-//   };
-
-//   if (loading) {
-//     console.log(`[Blog Post Client] Loading state for slug: '${slug}'`);
-//     return (
-//       <PageTransition>
-//         <div className="mt-[5rem] px-4 flex justify-center items-center min-h-[50vh]">
-//           <div className="animate-pulse">Loading post: {slug}...</div>
-//         </div>
-//       </PageTransition>
-//     );
-//   }
-
-//   if (error || !post) {
-//     console.error(`[Blog Post Client] Error or no post data for slug: '${slug}'`, { error, hasPost: !!post });
-//     return (
-//       <PageTransition>
-//         <div className="mt-[5rem] px-4 flex justify-center items-center min-h-[50vh]">
-//           <div className="text-center">
-//             <h2 className="text-2xl font-bold mb-4">{error ? 'Error Loading Post' : 'Post Not Available'}</h2>
-//             <p className="text-red-500 mb-4">{error || 'We couldn\'t find the blog post you\'re looking for.'}</p>
-//             <div className="mt-6 flex justify-center space-x-4">
-//               <Link href="/blog" className="px-4 py-2 bg-primary text-white rounded-md hover:bg-opacity-90 transition-all">
-//                 Browse All Posts
-//               </Link>
-//               <button 
-//                 onClick={() => window.location.reload()}
-//                 className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-all"
-//               >
-//                 Try Again
-//               </button>
-//             </div>
-//           </div>
-//         </div>
-//       </PageTransition>
-//     );
-//   }
-
 "use client";
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import PageTransition from "@/components/PageTransition";
 import AnimatedSection from "@/components/AnimatedSection";
 import RelatedPosts from "@/components/blog/RelatedPosts";
@@ -150,19 +19,48 @@ export default function BlogPostClient({ slug }: { slug: string }) {
   const [hasLiked, setHasLiked] = useState(false);
 
   useEffect(() => {
+    // Check if user has already liked this post
+    const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
+    if (post && likedPosts.includes(post._id)) {
+      setHasLiked(true);
+    }
+  }, [post]);
+
+  useEffect(() => {
     async function loadPost() {
       try {
         setLoading(true);
         console.log(`[Blog Post Client] Loading post with slug: ${slug}`);
         
-        const fetchedPost = await fetchBlogPostBySlug(slug);
-        console.log(`[Blog Post Client] Successfully loaded post: ${fetchedPost.title}`);
-        setPost(fetchedPost);
+        // Implement retry logic for client-side fetching
+        const maxRetries = 3;
+        let retryCount = 0;
+        let success = false;
         
-        // Check if user has already liked this post
-        const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
-        if (likedPosts.includes(fetchedPost._id)) {
-          setHasLiked(true);
+        while (!success && retryCount < maxRetries) {
+          try {
+            // Add a cache-busting parameter for Vercel edge network
+            const timestamp = new Date().getTime();
+            const fetchedPost = await fetchBlogPostBySlug(`${slug}?t=${timestamp}`);
+            
+            if (fetchedPost && fetchedPost._id) {
+              console.log(`[Blog Post Client] Successfully loaded post: ${fetchedPost.title}`);
+              setPost(fetchedPost);
+              success = true;
+            } else {
+              throw new Error('Received invalid post data');
+            }
+          } catch (fetchError) {
+            retryCount++;
+            console.warn(`[Blog Post Client] Retry ${retryCount}/${maxRetries} failed:`, fetchError);
+            
+            if (retryCount < maxRetries) {
+              // Wait before retrying with exponential backoff
+              await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 500));
+            } else {
+              throw fetchError; // Re-throw if all retries failed
+            }
+          }
         }
       } catch (err) {
         console.error(`[Blog Post Client] Error fetching blog post with slug ${slug}:`, err);
@@ -204,6 +102,7 @@ export default function BlogPostClient({ slug }: { slug: string }) {
   };
 
   if (loading) {
+    console.log(`[Blog Post Client] Loading state for slug: '${slug}'`);
     return (
       <PageTransition>
         <div className="mt-[5rem] px-4 flex justify-center items-center min-h-[50vh]">
@@ -214,6 +113,7 @@ export default function BlogPostClient({ slug }: { slug: string }) {
   }
 
   if (error || !post) {
+    console.error(`[Blog Post Client] Error or no post data for slug: '${slug}'`, { error, hasPost: !!post });
     return (
       <PageTransition>
         <div className="mt-[5rem] px-4 flex justify-center items-center min-h-[50vh]">
