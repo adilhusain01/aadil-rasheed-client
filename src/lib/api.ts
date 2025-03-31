@@ -224,15 +224,32 @@ export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost> {
   const encodedSlug = encodeURIComponent(slug);
   console.log(`[API Debug] fetchBlogPostBySlug() - Starting request to ${API_URL}/blog/${encodedSlug}`);
   
-  // During build time, return mock data with all required fields
+  // During build time, return appropriate mock data based on the slug
   if (isBuildTime()) {
-    console.log('[API Debug] Build time detected, returning mock data for blog post');
+    console.log(`[API Debug] Build time detected, returning mock data for blog post with slug: ${slug}`);
+    
+    // For specific critical slugs, provide more detailed mock data
+    if (slug === 'ham-pe-laazim-hai-ki-ham-waqt-ko-zaaya-na-karein') {
+      return {
+        _id: 'mock-urdu-post-id',
+        title: 'ہم پے لازم ہے کہ ہم وقت کو ضایع نہ کریں',
+        slug: 'ham-pe-laazim-hai-ki-ham-waqt-ko-zaaya-na-karein',
+        excerpt: 'A thoughtful reflection on the value of time',
+        content: '<p>This is detailed mock content for this specific Urdu blog post.</p>',
+        date: '2023-10-15T12:00:00Z',
+        likes: 42,
+        isPublished: true,
+        tags: ['urdu', 'poetry', 'reflection']
+      };
+    }
+    
+    // Generic mock data for other slugs
     return {
-      _id: 'mock-id',
-      title: 'Mock Blog Post',
+      _id: `mock-id-${slug}`,
+      title: `Mock Blog Post: ${slug.replace(/-/g, ' ')}`,
       slug: slug,
       excerpt: 'This is a mock blog post for build time',
-      content: '<p>Mock content</p>',
+      content: '<p>Mock content for static generation</p>',
       date: new Date().toISOString(),
       likes: 0,
       isPublished: true,
@@ -282,9 +299,42 @@ export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost> {
     
     // All attempts failed
     console.error(`[API Debug] All ${maxAttempts} attempts failed for slug ${slug}`);
+    
+    // For a production environment, consider providing fallback content rather than throwing
+    if (process.env.NODE_ENV === 'production') {
+      console.log('[API Debug] Production environment detected, returning fallback content');
+      return {
+        _id: `fallback-${slug}`,
+        title: `${slug.replace(/-/g, ' ')}`,
+        slug: slug,
+        excerpt: 'Content temporarily unavailable',
+        content: '<p>We apologize, but this content is temporarily unavailable. Please check back later.</p>',
+        date: new Date().toISOString(),
+        likes: 0,
+        isPublished: true,
+        tags: []
+      };
+    }
+    
     throw lastError;
   } catch (error) {
     console.error(`[API Debug] Error fetching blog post with slug ${slug}:`, error);
+    
+    // In production, don't throw errors to the client - provide fallback content instead
+    if (process.env.NODE_ENV === 'production') {
+      return {
+        _id: `error-${slug}`,
+        title: `${slug.replace(/-/g, ' ')}`,
+        slug: slug,
+        excerpt: 'Content temporarily unavailable',
+        content: '<p>We apologize, but this content is temporarily unavailable. Please check back later.</p>',
+        date: new Date().toISOString(),
+        likes: 0,
+        isPublished: true,
+        tags: []
+      };
+    }
+    
     throw error;
   }
 }
