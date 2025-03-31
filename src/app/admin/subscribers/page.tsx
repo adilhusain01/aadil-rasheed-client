@@ -191,7 +191,7 @@ export default function SubscribersPage() {
                 <p className="text-gray-600">Manage your email subscribers</p>
               </div>
               <div className="flex space-x-2">
-                <button
+                {/*<button
                   onClick={exportSubscribers}
                   className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md flex items-center"
                 >
@@ -207,7 +207,7 @@ export default function SubscribersPage() {
                     <Trash2 size={20} className="mr-2" />
                     Delete Selected ({selectedSubscribers.length})
                   </button>
-                )}
+                )}*/}
               </div>
             </div>
 
@@ -261,6 +261,7 @@ export default function SubscribersPage() {
                               checked={selectAll}
                               onChange={handleSelectAll}
                               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                              aria-label="Select all subscribers"
                             />
                           </div>
                         </th>
@@ -292,6 +293,7 @@ export default function SubscribersPage() {
                                   handleSelectSubscriber(subscriber._id)
                                 }
                                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                aria-label={`Select subscriber ${subscriber.email}`}
                               />
                             </div>
                           </td>
@@ -306,7 +308,7 @@ export default function SubscribersPage() {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span
                               className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                subscriber.isActive
+                                subscriber.isSubscribed
                                   ? "bg-green-100 text-green-800"
                                   : "bg-gray-100 text-gray-800"
                               }`}
@@ -324,6 +326,7 @@ export default function SubscribersPage() {
                                 isDeleting && deleteId === subscriber._id
                               }
                               className="text-red-600 hover:text-red-900"
+                              aria-label={`Delete subscriber ${subscriber.email}`}
                             >
                               <Trash2 size={18} />
                             </button>
