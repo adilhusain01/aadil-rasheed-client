@@ -109,8 +109,12 @@ const safeFetch = async (url: string, options: RequestInit = {}) => {
     
     // Check if response can be parsed as JSON
     const contentType = response.headers.get('content-type');
+    console.log(`[API Debug] Content-Type: ${contentType}`);
+    
     if (contentType && contentType.includes('application/json')) {
-      return await response.json();
+      const jsonData = await response.json();
+      console.log(`[API Debug] Raw response data:`, jsonData);
+      return jsonData;
     } else {
       console.error('[API Debug] Response is not JSON:', contentType);
       return { success: false, error: 'Invalid response format' };
@@ -147,14 +151,19 @@ export async function fetchBlogPosts(): Promise<BlogPost[]> {
     console.log(`[API Debug] Fetching from: ${API_URL}/blog`);
     const data = await safeFetch(`${API_URL}/blog`);
 
-    console.log(`[API Debug] Response:`, data);
+    console.log(`[API Debug] Complete response data:`, JSON.stringify(data));
     
-    if (!data.success) {
-      console.error(`[API Debug] API returned error: ${data.error}`);
+    if (!data || !data.success) {
+      console.error(`[API Debug] API returned error or invalid data:`, data);
       return [];
     }
     
-    console.log(`[API Debug] Got ${data.data?.length || 0} blog posts`);
+    if (!Array.isArray(data.data)) {
+      console.error(`[API Debug] Expected array but got:`, typeof data.data, data.data);
+      return [];
+    }
+    
+    console.log(`[API Debug] Got ${data.data.length} blog posts`);
     return data.data;
   } catch (error) {
     console.error('[API Debug] Error fetchBlogPosts:', error);

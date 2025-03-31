@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import PageTransition from "@/components/PageTransition";
@@ -5,54 +8,63 @@ import AnimatedSection from "@/components/AnimatedSection";
 import BlogCard from "@/components/blog/BlogCard";
 import { fetchBlogPosts, fetchGalleryImages } from "@/lib/api";
 import SubscriptionForm from "@/components/SubscriptionForm";
-import { BlogPost } from "./blog/[slug]/page";
 
-// Interface for Gallery Images
+// Interface for Gallery Images - updated to match the API response
 interface GalleryImage {
   _id: string;
   title: string;
   description?: string;
   imageUrl: string;
-  displayOrder: number;
-  isActive: boolean;
+  thumbnail?: string;
+  category?: string;
+  displayOrder?: number;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
 }
 
-async function getBlogPosts(): Promise<BlogPost[]> {
-  try {
-    return await fetchBlogPosts();
-  } catch (error) {
-    console.error('Error fetching blog posts:', error);
-    return [];
-  }
+// Interface for Blog Post
+export interface BlogPost {
+  _id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  image?: string;
+  date: string;
+  likes?: number;
+  isPublished: boolean;
 }
 
-async function getGalleryImages(): Promise<GalleryImage[]> {
-  try {
-    return await fetchGalleryImages();
-  } catch (error) {
-    console.error('Error fetching gallery images:', error);
-    return [];
-  }
-}
+export default function Home() {
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export default async function Home() {
-  const blogPosts = await getBlogPosts();
-  const galleryImages = await getGalleryImages();
-  
-  // Fallback gallery images in case API fails
-  const fallbackImages = [
-    "https://res.cloudinary.com/djxuqljgr/image/upload/v1742233800/image_tqophb.jpg",
-    "https://res.cloudinary.com/djxuqljgr/image/upload/v1742234779/imagr2_l80wqe.jpg",
-    "https://res.cloudinary.com/djxuqljgr/image/upload/v1742236807/image3_dak6e6.jpg",
-    "https://res.cloudinary.com/djxuqljgr/image/upload/v1742237648/4_reuuyf.jpg",
-    "https://res.cloudinary.com/djxuqljgr/image/upload/v1742237648/3_l63y7r.jpg",
-    "https://res.cloudinary.com/djxuqljgr/image/upload/v1742237647/2_bqzsdp.jpg",
-  ];
-  
-  // If no gallery images, use fallback
-  const displayImages = galleryImages.length > 0 
-    ? galleryImages.map(img => img.imageUrl) 
-    : fallbackImages;
+  useEffect(() => {
+    async function loadData() {
+      try {
+        console.log("[Page Debug] Loading data from client side");
+        setLoading(true);
+        const posts = await fetchBlogPosts();
+        const images = await fetchGalleryImages();
+        
+        console.log("[Page Debug] Got blog posts:", posts.length);
+        console.log("[Page Debug] Got gallery images:", images.length);
+        
+        setBlogPosts(posts);
+        setGalleryImages(images);
+      } catch (error) {
+        console.error("Error loading data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    loadData();
+  }, []);
+
   return (
     <PageTransition>
       <div className="w-full mx-auto">
@@ -100,9 +112,17 @@ export default async function Home() {
             <div className="py-12 max-w-6xl mx-auto">
               <h2 className="text-5xl font-serif mb-8">Recent Posts</h2>
               <div className="grid grid-cols-1 gap-12">
-                {blogPosts.slice(0, 3).map((post: BlogPost) => (
-                  <BlogCard key={post.slug} post={post} />
-                ))}
+                {loading ? (
+                  <div className="text-center py-8">Loading latest content...</div>
+                ) : blogPosts.length > 0 ? (
+                  blogPosts.slice(0, 3).map((post: BlogPost) => (
+                    <BlogCard key={post.slug} post={post} />
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <p>No blog posts found. Check back soon for new content!</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -137,22 +157,30 @@ export default async function Home() {
               Some Moments from past
             </h2>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {displayImages.map((image, index) => (
-                <div
-                  key={index}
-                  className="relative h-[150px] sm:h-[200px] md:h-[250px] lg:h-[300px] overflow-hidden group"
-                >
-                  <Image
-                    src={image}
-                    alt={`Smile gallery ${index + 1}`}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                </div>
-              ))}
-            </div>
+            {loading ? (
+              <div className="text-center py-8">Loading gallery...</div>
+            ) : galleryImages.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {galleryImages.slice(0, 4).map((image) => (
+                  <div
+                    key={image._id}
+                    className="relative h-[150px] sm:h-[200px] md:h-[250px] lg:h-[300px] overflow-hidden group"
+                  >
+                    <Image
+                      src={image.imageUrl}
+                      alt={`Smile gallery ${image._id}`}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p>No gallery images found. Check back soon for new visuals!</p>
+              </div>
+            )}
           </div>
         </AnimatedSection>
 
