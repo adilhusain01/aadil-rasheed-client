@@ -77,14 +77,13 @@ export default async function Home() {
                   height={440}
                   className="mb-4 shadow-md"
                 />
-                <Link
-                  href="/blog/detoxing-my-social-media-feed"
+                <div
                   className="block"
                 >
                   <h3 className="text-xl font-serif hover:text-primary transition-colors mb-2">
                     पहली मोहब्बत, पहली मोहब्बत होती है
                   </h3>
-                </Link>
+                </div>
                 <Link
                   href="/blog"
                   className="border border-gray-300 px-5 py-2 text-sm hover:bg-primary hover:text-white hover:border-primary transition-colors"
