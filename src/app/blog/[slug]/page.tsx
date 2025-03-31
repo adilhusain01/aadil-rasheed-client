@@ -13,6 +13,12 @@ export async function generateStaticParams() {
     // Include hardcoded slugs for critical blog posts to ensure they're pre-rendered
     const hardcodedSlugs = [
       { slug: 'ham-pe-laazim-hai-ki-ham-waqt-ko-zaaya-na-karein' },
+      { slug: 'cgdg' }, // Adding your example slug
+      // A few more examples of potential slugs with different patterns
+      { slug: 'my-blog-post' },
+      { slug: 'special_characters' },
+      { slug: 'with.dots' },
+      { slug: 'numbers123' },
       // Add any other important slugs that must be pre-rendered
     ];
     
@@ -33,13 +39,18 @@ export async function generateStaticParams() {
     });
     
     console.log(`Generated params for ${allSlugs.length} blog posts`);
+    console.log('Slugs being pre-rendered:', allSlugs.map(s => s.slug).join(', '));
     return allSlugs;
   } catch (error) {
     console.error('Error generating static params:', error);
     // Always return at least the hardcoded slugs even if API fails
     return [
       { slug: 'ham-pe-laazim-hai-ki-ham-waqt-ko-zaaya-na-karein' },
-      // Add any other critical slugs
+      { slug: 'cgdg' }, // Your example slug
+      { slug: 'my-blog-post' },
+      { slug: 'special_characters' },
+      { slug: 'with.dots' },
+      { slug: 'numbers123' },
     ];
   }
 }
@@ -53,8 +64,12 @@ export const dynamicParams = true;
 export default function BlogPostPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
   
-  // Validate slug format to prevent 404s caused by invalid slugs
-  if (!slug || typeof slug !== 'string' || !slug.match(/^[a-zA-Z0-9-]+$/)) {
+  // Log the slug to help with debugging
+  console.log(`[Blog Post Page] Received slug: '${slug}'`);
+  
+  // Only do minimal validation to prevent obviously invalid slugs
+  if (!slug || typeof slug !== 'string' || slug.length < 1) {
+    console.error(`[Blog Post Page] Invalid slug detected: '${slug}'`);
     return notFound();
   }
   

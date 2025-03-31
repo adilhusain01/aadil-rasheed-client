@@ -232,9 +232,12 @@ export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost> {
   const encodedSlug = encodeURIComponent(slug);
   console.log(`[API Debug] fetchBlogPostBySlug() - Starting request to ${API_URL}/blog/${encodedSlug}`);
   
-  // During build time, return appropriate mock data based on the slug
-  if (isBuildTime()) {
-    console.log(`[API Debug] Build time detected, returning mock data for blog post with slug: ${slug}`);
+  // Log information about the request for debugging
+  console.log(`[API Debug] fetchBlogPostBySlug processing slug: '${slug}' (encoded: '${encodedSlug}')`); 
+
+  // During build time or in development environment, return appropriate mock data
+  if (isBuildTime() || process.env.NODE_ENV === 'development') {
+    console.log(`[API Debug] Build time or development environment detected, returning mock data for blog post with slug: ${slug}`);
     
     // For specific critical slugs, provide more detailed mock data
     if (slug === 'ham-pe-laazim-hai-ki-ham-waqt-ko-zaaya-na-karein') {
