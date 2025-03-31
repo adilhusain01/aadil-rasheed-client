@@ -2,29 +2,20 @@
 const nextConfig = {
   // Do not use output: "export" for Vercel deployments
   // output: "export",
-  
+
   // Remove custom dist directory for Vercel compatibility
   // distDir: "next",
-  
+
   // Ensure all paths are properly handled (including dynamic ones)
   trailingSlash: false,
-  
+
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'res.cloudinary.com',
-      },
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-      },
-      {
-        protocol: 'https',
-        hostname: '**.vercel.app',
+        protocol: "https",
+        hostname: "**",
       },
     ],
-    domains: ['imgs.search.brave.com'],
   },
   typescript: {
     // During development we can ignore TypeScript errors

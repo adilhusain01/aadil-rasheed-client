@@ -9,7 +9,7 @@ import { fetchWithAuth } from "@/lib/api";
 interface Subscriber {
   _id: string;
   email: string;
-  isActive: boolean;
+  isSubscribed: boolean;
   createdAt: string;
 }
 
@@ -26,11 +26,13 @@ export default function SubscribersPage() {
   const fetchSubscribers = async () => {
     try {
       setLoading(true);
-      const data = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/subscription`);
+      const data = await fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_API_URL}/subscription`
+      );
       setSubscribers(data.data);
     } catch (error) {
-      console.error('Error fetching subscribers:', error);
-      setError('Failed to load subscribers. Please try again.');
+      console.error("Error fetching subscribers:", error);
+      setError("Failed to load subscribers. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -46,24 +48,31 @@ export default function SubscribersPage() {
 
   const handleDeleteSelected = async () => {
     if (selectedSubscribers.length === 0) return;
-    
-    if (window.confirm(`Are you sure you want to delete ${selectedSubscribers.length} selected subscriber(s)? This action cannot be undone.`)) {
+
+    if (
+      window.confirm(
+        `Are you sure you want to delete ${selectedSubscribers.length} selected subscriber(s)? This action cannot be undone.`
+      )
+    ) {
       try {
         setIsDeleting(true);
-        
-        await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/subscription/batch`, {
-          method: 'DELETE',
-          body: JSON.stringify({ ids: selectedSubscribers })
-        });
-        
+
+        await fetchWithAuth(
+          `${process.env.NEXT_PUBLIC_API_URL}/subscription/batch`,
+          {
+            method: "DELETE",
+            body: JSON.stringify({ ids: selectedSubscribers }),
+          }
+        );
+
         // Refresh the subscribers list
         fetchSubscribers();
         // Clear selection
         setSelectedSubscribers([]);
         setSelectAll(false);
       } catch (error) {
-        console.error('Error deleting subscribers:', error);
-        setError('Failed to delete subscribers. Please try again.');
+        console.error("Error deleting subscribers:", error);
+        setError("Failed to delete subscribers. Please try again.");
       } finally {
         setIsDeleting(false);
       }
@@ -71,20 +80,27 @@ export default function SubscribersPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this subscriber? This action cannot be undone.')) {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this subscriber? This action cannot be undone."
+      )
+    ) {
       try {
         setIsDeleting(true);
         setDeleteId(id);
-        
-        await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/subscription/${id}`, {
-          method: 'DELETE'
-        });
-        
+
+        await fetchWithAuth(
+          `${process.env.NEXT_PUBLIC_API_URL}/subscription/${id}`,
+          {
+            method: "DELETE",
+          }
+        );
+
         // Refresh the subscribers list
         fetchSubscribers();
       } catch (error) {
-        console.error('Error deleting subscriber:', error);
-        setError('Failed to delete subscriber. Please try again.');
+        console.error("Error deleting subscriber:", error);
+        setError("Failed to delete subscriber. Please try again.");
       } finally {
         setIsDeleting(false);
         setDeleteId(null);
@@ -95,28 +111,33 @@ export default function SubscribersPage() {
   const exportSubscribers = async () => {
     try {
       setLoading(true);
-      const data = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/subscription/export`);
-      
+      const data = await fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_API_URL}/subscription/export`
+      );
+
       // Create a CSV file from the data
       let csvContent = "data:text/csv;charset=utf-8,";
       csvContent += "Email,Subscription Date\n";
-      
+
       data.data.forEach((subscriber: Subscriber) => {
         const dateString = new Date(subscriber.createdAt).toLocaleDateString();
         csvContent += `${subscriber.email},${dateString}\n`;
       });
-      
+
       // Create a download link and trigger it
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `subscribers_${new Date().toISOString().slice(0, 10)}.csv`);
+      link.setAttribute(
+        "download",
+        `subscribers_${new Date().toISOString().slice(0, 10)}.csv`
+      );
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      console.error('Error exporting subscribers:', error);
-      setError('Failed to export subscribers. Please try again.');
+      console.error("Error exporting subscribers:", error);
+      setError("Failed to export subscribers. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -126,15 +147,15 @@ export default function SubscribersPage() {
     if (selectAll) {
       setSelectedSubscribers([]);
     } else {
-      setSelectedSubscribers(subscribers.map(sub => sub._id));
+      setSelectedSubscribers(subscribers.map((sub) => sub._id));
     }
     setSelectAll(!selectAll);
   };
 
   const handleSelectSubscriber = (id: string) => {
-    setSelectedSubscribers(prev => {
+    setSelectedSubscribers((prev) => {
       if (prev.includes(id)) {
-        return prev.filter(subId => subId !== id);
+        return prev.filter((subId) => subId !== id);
       } else {
         return [...prev, id];
       }
@@ -143,15 +164,15 @@ export default function SubscribersPage() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     }).format(date);
   };
 
   // Filter subscribers based on search term
-  const filteredSubscribers = subscribers.filter(sub => 
+  const filteredSubscribers = subscribers.filter((sub) =>
     sub.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -159,16 +180,18 @@ export default function SubscribersPage() {
     <ProtectedRoute>
       <div className="flex h-screen bg-gray-100">
         <Sidebar />
-        
+
         <div className="flex-1 overflow-auto">
           <main className="p-8">
             <div className="flex justify-between items-center mb-8">
               <div>
-                <h1 className="text-3xl font-bold text-gray-800">Subscribers</h1>
+                <h1 className="text-3xl font-bold text-gray-800">
+                  Subscribers
+                </h1>
                 <p className="text-gray-600">Manage your email subscribers</p>
               </div>
               <div className="flex space-x-2">
-                <button 
+                <button
                   onClick={exportSubscribers}
                   className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md flex items-center"
                 >
@@ -176,7 +199,7 @@ export default function SubscribersPage() {
                   Export CSV
                 </button>
                 {selectedSubscribers.length > 0 && (
-                  <button 
+                  <button
                     onClick={handleDeleteSelected}
                     disabled={isDeleting}
                     className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md flex items-center"
@@ -187,13 +210,16 @@ export default function SubscribersPage() {
                 )}
               </div>
             </div>
-            
+
             {error && (
-              <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
+              <div
+                className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6"
+                role="alert"
+              >
                 <p>{error}</p>
               </div>
             )}
-            
+
             <div className="mb-6">
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -208,15 +234,19 @@ export default function SubscribersPage() {
                 />
               </div>
             </div>
-            
+
             {loading ? (
               <div className="flex justify-center items-center h-64">
                 <p className="text-lg">Loading subscribers...</p>
               </div>
             ) : subscribers.length === 0 ? (
               <div className="bg-white rounded-lg shadow-md p-8 text-center">
-                <h3 className="text-xl font-semibold mb-4">No Subscribers Found</h3>
-                <p className="text-gray-600">You don't have any subscribers yet.</p>
+                <h3 className="text-xl font-semibold mb-4">
+                  No Subscribers Found
+                </h3>
+                <p className="text-gray-600">
+                  You don't have any subscribers yet.
+                </p>
               </div>
             ) : (
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -234,10 +264,18 @@ export default function SubscribersPage() {
                             />
                           </div>
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Subscribed</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Email
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Subscription
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Date Subscribed
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -247,8 +285,12 @@ export default function SubscribersPage() {
                             <div className="flex items-center">
                               <input
                                 type="checkbox"
-                                checked={selectedSubscribers.includes(subscriber._id)}
-                                onChange={() => handleSelectSubscriber(subscriber._id)}
+                                checked={selectedSubscribers.includes(
+                                  subscriber._id
+                                )}
+                                onChange={() =>
+                                  handleSelectSubscriber(subscriber._id)
+                                }
                                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                               />
                             </div>
@@ -256,12 +298,20 @@ export default function SubscribersPage() {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
                               <Mail size={16} className="text-gray-400 mr-3" />
-                              <span className="text-sm text-gray-900">{subscriber.email}</span>
+                              <span className="text-sm text-gray-900">
+                                {subscriber.email}
+                              </span>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${subscriber.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                              {subscriber.isActive ? 'Active' : 'Inactive'}
+                            <span
+                              className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                subscriber.isActive
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-gray-100 text-gray-800"
+                              }`}
+                            >
+                              {subscriber.isSubscribed ? "Active" : "Inactive"}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -270,7 +320,9 @@ export default function SubscribersPage() {
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button
                               onClick={() => handleDelete(subscriber._id)}
-                              disabled={isDeleting && deleteId === subscriber._id}
+                              disabled={
+                                isDeleting && deleteId === subscriber._id
+                              }
                               className="text-red-600 hover:text-red-900"
                             >
                               <Trash2 size={18} />
@@ -283,7 +335,8 @@ export default function SubscribersPage() {
                 </div>
                 <div className="px-6 py-4 border-t border-gray-200">
                   <p className="text-sm text-gray-500">
-                    Showing {filteredSubscribers.length} of {subscribers.length} subscribers
+                    Showing {filteredSubscribers.length} of {subscribers.length}{" "}
+                    subscribers
                   </p>
                 </div>
               </div>
