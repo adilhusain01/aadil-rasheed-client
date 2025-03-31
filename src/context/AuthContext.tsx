@@ -32,15 +32,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const checkUserLoggedIn = async () => {
     try {
+      // Get token from localStorage as fallback
+      const token = localStorage.getItem('token');
+      
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      };
+      
+      // Add Authorization header if token exists in localStorage
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+        method: 'GET',
         credentials: 'include',
+        headers
       });
+
+      console.log('Auth check response status:', res.status);
 
       if (res.ok) {
         const data = await res.json();
+        console.log('User authenticated:', data);
         setUser(data.data);
         setIsAuthenticated(true);
       } else {
+        console.log('User not authenticated:', res.status);
         setUser(null);
         setIsAuthenticated(false);
       }
@@ -66,13 +84,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         credentials: 'include',
       });
 
-      console.log(res);
+      console.log('Login response:', res);
 
       if (!res.ok) {
         const error = await res.json();
         throw new Error(error.error || 'Failed to login');
       }
 
+      // Get the response data
+      const data = await res.json();
+      
+      // Store token in localStorage as fallback
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        console.log('Token stored in localStorage');
+      }
+
+      // Check user session
       await checkUserLoggedIn();
     } catch (error) {
       console.error('Login error:', error);
@@ -86,9 +114,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
         credentials: 'include',
+        headers
       });
+      
+      // Clear localStorage
+      localStorage.removeItem('token');
       
       setUser(null);
       setIsAuthenticated(false);
