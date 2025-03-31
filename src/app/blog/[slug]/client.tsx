@@ -30,11 +30,34 @@ export default function BlogPostClient({ slug }: { slug: string }) {
     async function loadPost() {
       try {
         setLoading(true);
-        const fetchedPost = await fetchBlogPostBySlug(slug);
-        setPost(fetchedPost);
+        console.log(`[Blog Post Client] Loading post with slug: ${slug}`);
+        
+        // Implement retry logic for client-side fetching
+        const maxRetries = 3;
+        let retryCount = 0;
+        let success = false;
+        
+        while (!success && retryCount < maxRetries) {
+          try {
+            const fetchedPost = await fetchBlogPostBySlug(slug);
+            console.log(`[Blog Post Client] Successfully loaded post: ${fetchedPost.title}`);
+            setPost(fetchedPost);
+            success = true;
+          } catch (fetchError) {
+            retryCount++;
+            console.warn(`[Blog Post Client] Retry ${retryCount}/${maxRetries} failed:`, fetchError);
+            
+            if (retryCount < maxRetries) {
+              // Wait before retrying with exponential backoff
+              await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 500));
+            } else {
+              throw fetchError; // Re-throw if all retries failed
+            }
+          }
+        }
       } catch (err) {
-        console.error(`Error fetching blog post with slug ${slug}:`, err);
-        setError('Failed to load blog post');
+        console.error(`[Blog Post Client] Error fetching blog post with slug ${slug}:`, err);
+        setError('Failed to load blog post. Please try refreshing the page.');
       } finally {
         setLoading(false);
       }

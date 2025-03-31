@@ -175,7 +175,15 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
 
 // Helper to check if we're in build/SSG mode
 const isBuildTime = () => {
-  const isBuild = process.env.NODE_ENV === 'production' && typeof window === 'undefined';
+  // Enhanced detection of build-time/SSG environments
+  const isBuild = (
+    // Standard check for server-side rendering
+    (process.env.NODE_ENV === 'production' && typeof window === 'undefined') ||
+    // Additional check for Next.js static generation
+    process.env.NEXT_PHASE === 'phase-production-build' ||
+    // Check for static path generation
+    (typeof window === 'undefined' && process.env.NEXT_RUNTIME === 'nodejs' && Boolean(process.env.GENERATING_STATIC_PARAMS))
+  );
   console.log(`[API Debug] isBuildTime(): ${isBuild}`);
   return isBuild;
 };
