@@ -146,6 +146,8 @@ export async function fetchBlogPosts(): Promise<BlogPost[]> {
   try {
     console.log(`[API Debug] Fetching from: ${API_URL}/blog`);
     const data = await safeFetch(`${API_URL}/blog`);
+
+    console.log(`[API Debug] Response:`, data);
     
     if (!data.success) {
       console.error(`[API Debug] API returned error: ${data.error}`);
